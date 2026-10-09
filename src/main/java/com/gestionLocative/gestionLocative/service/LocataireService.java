@@ -1,12 +1,15 @@
 package com.gestionLocative.gestionLocative.service;
 
 import com.gestionLocative.gestionLocative.repository.BailRepository;
-import com.gestionLocative.gestionLocative.service.BailService;
+import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
 import com.gestionLocative.gestionLocative.dto.BailResponseDto;
 import com.gestionLocative.gestionLocative.entity.Locataire;
+import com.gestionLocative.gestionLocative.dto.ImmeubleResponseDto;
 import com.gestionLocative.gestionLocative.dto.LocataireRequestDto;
 import com.gestionLocative.gestionLocative.dto.LocataireResponseDto;
-import lombok.RequiredArgsConstructor;
+import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
+import com.gestionLocative.gestionLocative.dto.RequestDto;
+import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,15 +17,26 @@ import com.gestionLocative.gestionLocative.repository.LocataireRepository;
 
 /**
  * Service métier gérant les locataires.
- * Fournit les opérations CRUD ainsi que les conversions entité/DTO.
+ * Fournit la création, la modification, la suppression et les conversions entité/DTO.
  */
 @Service
-@RequiredArgsConstructor
-public class LocataireService {
+public class LocataireService extends AbstractCrudService {
 
     private final LocataireRepository locataireRepository;
-    private final BailService bailService;
     private final BailRepository bailRepository;
+
+    /**
+     * Constructeur injectant les repositories des locataires et des baux.
+     *
+     * @param locataireRepository le repository des locataires
+     * @param bailRepository le repository des baux
+     */
+    public LocataireService(LocataireRepository locataireRepository,
+                            BailRepository bailRepository) {
+        super(locataireRepository);
+        this.locataireRepository = locataireRepository;
+        this.bailRepository = bailRepository;
+    }
 
     /**
      * Convertit une requête de locataire en entité.
@@ -45,7 +59,9 @@ public class LocataireService {
      * @param locataire L'entité du locataire.
      * @return La réponse DTO du locataire.
      */
-    public LocataireResponseDto toDto(Locataire locataire) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Locataire locataire = (Locataire) entity;
         return LocataireResponseDto.builder()
                 .id(locataire.getId())
                 .nom(locataire.getNom())
@@ -55,43 +71,8 @@ public class LocataireService {
                 .build();
     }
 
-    /**
-     * Récupère la liste de tous les locataires.
-     *
-     * @return La liste des locataires convertis en DTO.
-     */
-    public List<LocataireResponseDto> getAllLocataires() {
-        return locataireRepository.findAll().stream()
-                .map(this::toDto)
-                .toList();
-    }
 
-    /**
-     * Récupère un locataire par son identifiant.
-     *
-     * @param id L'identifiant du locataire.
-     * @return Le locataire trouvé, converti en DTO.
-     * @throws RuntimeException Si le locataire n'existe pas.
-     */
-    public LocataireResponseDto getLocataireById(Long id) {
-        Locataire locataire = locataireRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Locataire non trouvé"));
-        return toDto(locataire);
-    }
 
-    /**
-     * Supprime un locataire par son identifiant.
-     *
-     * @param id L'identifiant du locataire à supprimer.
-     * @return Le locataire supprimé, converti en DTO.
-     * @throws RuntimeException Si le locataire n'existe pas.
-     */
-    public LocataireResponseDto deleteById(Long id) {
-        Locataire locataire = locataireRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Locataire non trouvé"));
-        locataireRepository.deleteById(id);
-        return toDto(locataire);
-    }
 
     /**
      * Met à jour un locataire existant à partir du contenu de la requête.
@@ -101,7 +82,9 @@ public class LocataireService {
      * @return Le locataire mis à jour, converti en DTO.
      * @throws RuntimeException Si le locataire n'existe pas.
      */
-    public LocataireResponseDto updateById(Long id, LocataireRequestDto locataireRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        LocataireRequestDto locataireRequest = (LocataireRequestDto) request;
         Locataire locataire = locataireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Locataire non trouvé"));
         locataire.setNom(locataireRequest.getNom());
@@ -117,7 +100,9 @@ public class LocataireService {
      * @param locataireRequest La requête contenant les données du locataire.
      * @return Le locataire créé, converti en DTO.
      */
-    public LocataireResponseDto createById(LocataireRequestDto locataireRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        LocataireRequestDto locataireRequest = (LocataireRequestDto) request;
         Locataire locataire = toEntity(locataireRequest);
         return toDto(locataireRepository.save(locataire));
     }
@@ -130,7 +115,47 @@ public class LocataireService {
      */
     public List<BailResponseDto> getBauxByLocataire(Long id) {
         return bailRepository.findByLocataireId(id).stream()
-                .map(bailService::toDto)
+                .map(bail -> BailResponseDto.builder()
+                        .id(bail.getId())
+                        .dateDebut(bail.getDateDebut())
+                        .dateFin(bail.getDateFin())
+                        .montantLoyer(bail.getMontantLoyer())
+                        .provisionCharges(bail.getProvisionCharges())
+                        .depotGarantie(bail.getDepotGarantie())
+
+                        .appartement(AppartementResponseDto.builder()
+                                .id(bail.getAppartement().getId())
+                                .nom(bail.getAppartement().getNom())
+                                .surface(bail.getAppartement().getSurface())
+                                .nbPieces(bail.getAppartement().getNbPieces())
+                                .etage(bail.getAppartement().getEtage())
+
+                                .proprietaire(ProprietaireResponseDto.builder()
+                                        .id(bail.getAppartement().getProprietaire().getId())
+                                        .nom(bail.getAppartement().getProprietaire().getNom())
+                                        .prenom(bail.getAppartement().getProprietaire().getPrenom())
+                                        .numero(bail.getAppartement().getProprietaire().getNumero())
+                                        .adresse(bail.getAppartement().getProprietaire().getAdresse())
+                                        .build())
+
+                                .immeuble(ImmeubleResponseDto.builder()
+                                        .id(bail.getAppartement().getImmeuble().getId())
+                                        .nom(bail.getAppartement().getImmeuble().getNom())
+                                        .adresse(bail.getAppartement().getImmeuble().getAdresse())
+                                        .nbEtages(bail.getAppartement().getImmeuble().getNbEtages())
+                                        .build())
+
+                                .build())
+
+                        .locataire(LocataireResponseDto.builder()
+                                .id(bail.getLocataire().getId())
+                                .nom(bail.getLocataire().getNom())
+                                .prenom(bail.getLocataire().getPrenom())
+                                .numero(bail.getLocataire().getNumero())
+                                .email(bail.getLocataire().getEmail())
+                                .build())
+
+                        .build())
                 .toList();
     }
 }

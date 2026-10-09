@@ -14,7 +14,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BailRequestDto {
+public class BailRequestDto implements RequestDto {
     private Date dateDebut;
     private Date dateFin;
     private BigDecimal montantLoyer;

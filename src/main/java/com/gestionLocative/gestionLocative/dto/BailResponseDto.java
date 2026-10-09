@@ -16,7 +16,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BailResponseDto {
+public class BailResponseDto implements ResponseDto {
     private Long id;
     private Date dateDebut;
     private Date dateFin;

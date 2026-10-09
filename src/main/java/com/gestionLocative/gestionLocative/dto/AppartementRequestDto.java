@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AppartementRequestDto {
+public class AppartementRequestDto implements RequestDto {
     private String nom;
     private BigDecimal surface;
     private int nbPieces;

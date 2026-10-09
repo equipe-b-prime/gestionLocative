@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProprietaireRequestDto {
+public class ProprietaireRequestDto implements RequestDto {
     private Long id;
     private String nom;
     private String prenom;

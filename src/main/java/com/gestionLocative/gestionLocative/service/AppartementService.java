@@ -9,24 +9,39 @@ import com.gestionLocative.gestionLocative.repository.ImmeubleRepository;
 import com.gestionLocative.gestionLocative.dto.ImmeubleResponseDto;
 import com.gestionLocative.gestionLocative.repository.ProprietaireRepository;
 import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
-import lombok.RequiredArgsConstructor;
+import com.gestionLocative.gestionLocative.dto.RequestDto;
+import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import com.gestionLocative.gestionLocative.repository.AppartementRepository;
 
 /**
  * Service métier gérant les appartements.
- * Fournit les opérations CRUD ainsi que les conversions entité/DTO,
+ * Fournit la création, la modification, la suppression et les conversions entité/DTO,
  * avec résolution des relations propriétaire et immeuble par identifiant.
  */
 @Service
-@RequiredArgsConstructor
-public class AppartementService {
+public class AppartementService extends AbstractCrudService {
 
     private final AppartementRepository appartementRepository;
     private final ProprietaireRepository proprietaireRepository;
     private final ImmeubleRepository immeubleRepository;
+
+    /**
+     * Constructeur injectant les repositories de l'appartement, du propriétaire et de l'immeuble.
+     *
+     * @param appartementRepository le repository des appartements
+     * @param proprietaireRepository le repository des propriétaires
+     * @param immeubleRepository le repository des immeubles
+     */
+    public AppartementService(AppartementRepository appartementRepository,
+                              ProprietaireRepository proprietaireRepository,
+                              ImmeubleRepository immeubleRepository) {
+        super(appartementRepository);
+        this.appartementRepository = appartementRepository;
+        this.proprietaireRepository = proprietaireRepository;
+        this.immeubleRepository = immeubleRepository;
+    }
 
     /**
      * Convertit une requête d'appartement en entité.
@@ -53,7 +68,9 @@ public class AppartementService {
      * @param appartement L'entité de l'appartement.
      * @return La réponse DTO de l'appartement, avec propriétaire et immeuble imbriqués.
      */
-    public AppartementResponseDto toDto(Appartement appartement) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Appartement appartement = (Appartement) entity;
         return AppartementResponseDto.builder()
                 .id(appartement.getId())
                 .nom(appartement.getNom())
@@ -76,43 +93,8 @@ public class AppartementService {
                 ).build();
     }
 
-    /**
-     * Récupère la liste de tous les appartements.
-     *
-     * @return La liste des appartements convertis en DTO.
-     */
-    public List<AppartementResponseDto> getAllAppartements() {
-        return appartementRepository.findAll().stream()
-                .map(this::toDto)
-                .toList();
-    }
 
-    /**
-     * Récupère un appartement par son identifiant.
-     *
-     * @param id L'identifiant de l'appartement.
-     * @return L'appartement trouvé, converti en DTO.
-     * @throws RuntimeException Si l'appartement n'existe pas.
-     */
-    public AppartementResponseDto getAppartementById(Long id) {
-        Appartement appartement = appartementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appartement non trouvé"));
-        return toDto(appartement);
-    }
 
-    /**
-     * Supprime un appartement par son identifiant.
-     *
-     * @param id L'identifiant de l'appartement à supprimer.
-     * @return L'appartement supprimé, converti en DTO.
-     * @throws RuntimeException Si l'appartement n'existe pas.
-     */
-    public AppartementResponseDto deleteById(Long id) {
-        Appartement appartement = appartementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appartement non trouvé"));
-        appartementRepository.deleteById(id);
-        return toDto(appartement);
-    }
 
     /**
      * Met à jour un appartement existant à partir du contenu de la requête.
@@ -122,7 +104,9 @@ public class AppartementService {
      * @return L'appartement mis à jour, converti en DTO.
      * @throws RuntimeException Si l'appartement, le propriétaire ou l'immeuble n'existe pas.
      */
-    public AppartementResponseDto updateById(Long id, AppartementRequestDto appartementRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        AppartementRequestDto appartementRequest = (AppartementRequestDto) request;
         Proprietaire proprietaire = proprietaireRepository.findById(appartementRequest.getProprietaireId())
                 .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
         Immeuble immeuble = immeubleRepository.findById(appartementRequest.getImmeubleId())
@@ -145,7 +129,9 @@ public class AppartementService {
      * @return L'appartement créé, converti en DTO.
      * @throws RuntimeException Si le propriétaire ou l'immeuble n'existe pas.
      */
-    public AppartementResponseDto createById(AppartementRequestDto appartementRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        AppartementRequestDto appartementRequest = (AppartementRequestDto) request;
         Proprietaire proprietaire = proprietaireRepository.findById(appartementRequest.getProprietaireId())
                 .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
         Immeuble immeuble = immeubleRepository.findById(appartementRequest.getImmeubleId())

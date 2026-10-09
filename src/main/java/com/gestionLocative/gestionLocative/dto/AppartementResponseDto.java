@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AppartementResponseDto {
+public class AppartementResponseDto implements ResponseDto {
     private Long id;
     private String nom;
     private BigDecimal surface;

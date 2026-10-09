@@ -11,24 +11,39 @@ import com.gestionLocative.gestionLocative.dto.ImmeubleResponseDto;
 import com.gestionLocative.gestionLocative.repository.LocataireRepository;
 import com.gestionLocative.gestionLocative.dto.LocataireResponseDto;
 import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
-import lombok.RequiredArgsConstructor;
+import com.gestionLocative.gestionLocative.dto.RequestDto;
+import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import com.gestionLocative.gestionLocative.repository.BailRepository;
 
 /**
  * Service métier gérant les baux.
- * Fournit les opérations CRUD ainsi que les conversions entité/DTO,
+ * Fournit la création, la modification, la suppression et les conversions entité/DTO,
  * avec résolution des relations appartement et locataire par identifiant.
  */
 @Service
-@RequiredArgsConstructor
-public class BailService {
+public class BailService extends AbstractCrudService {
 
     private final BailRepository bailRepository;
     private final AppartementRepository appartementRepository;
     private final LocataireRepository locataireRepository;
+
+    /**
+     * Constructeur injectant les repositories du bail, de l'appartement et du locataire.
+     *
+     * @param bailRepository le repository des baux
+     * @param appartementRepository le repository des appartements
+     * @param locataireRepository le repository des locataires
+     */
+    public BailService(BailRepository bailRepository,
+                       AppartementRepository appartementRepository,
+                       LocataireRepository locataireRepository) {
+        super(bailRepository);
+        this.bailRepository = bailRepository;
+        this.appartementRepository = appartementRepository;
+        this.locataireRepository = locataireRepository;
+    }
 
     /**
      * Convertit une requête de bail en entité.
@@ -56,7 +71,9 @@ public class BailService {
      * @param bail L'entité du bail.
      * @return La réponse DTO du bail, avec appartement et locataire imbriqués.
      */
-    public BailResponseDto toDto(Bail bail) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Bail bail = (Bail) entity;
         return BailResponseDto.builder()
                 .id(bail.getId())
                 .dateDebut(bail.getDateDebut())
@@ -100,43 +117,8 @@ public class BailService {
                 .build();
     }
 
-    /**
-     * Récupère la liste de tous les baux.
-     *
-     * @return La liste des baux convertis en DTO.
-     */
-    public List<BailResponseDto> getAllBails() {
-        return bailRepository.findAll().stream()
-                .map(this::toDto)
-                .toList();
-    }
 
-    /**
-     * Récupère un bail par son identifiant.
-     *
-     * @param id L'identifiant du bail.
-     * @return Le bail trouvé, converti en DTO.
-     * @throws RuntimeException Si le bail n'existe pas.
-     */
-    public BailResponseDto getBailById(Long id) {
-        Bail bail = bailRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bail non trouvé"));
-        return toDto(bail);
-    }
 
-    /**
-     * Supprime un bail par son identifiant.
-     *
-     * @param id L'identifiant du bail à supprimer.
-     * @return Le bail supprimé, converti en DTO.
-     * @throws RuntimeException Si le bail n'existe pas.
-     */
-    public BailResponseDto deleteById(Long id) {
-        Bail bail = bailRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bail non trouvé"));
-        bailRepository.deleteById(id);
-        return toDto(bail);
-    }
 
     /**
      * Met à jour un bail existant à partir du contenu de la requête.
@@ -146,7 +128,9 @@ public class BailService {
      * @return Le bail mis à jour, converti en DTO.
      * @throws RuntimeException Si le bail, l'appartement ou le locataire n'existe pas.
      */
-    public BailResponseDto updateById(Long id, BailRequestDto bailRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        BailRequestDto bailRequest = (BailRequestDto) request;
         Appartement appartement = appartementRepository.findById(bailRequest.getAppartementId())
                 .orElseThrow(() -> new RuntimeException("Appartement non trouvé"));
         Locataire locataire = locataireRepository.findById(bailRequest.getLocataireId())
@@ -170,7 +154,9 @@ public class BailService {
      * @return Le bail créé, converti en DTO.
      * @throws RuntimeException Si l'appartement ou le locataire n'existe pas.
      */
-    public BailResponseDto createById(BailRequestDto bailRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        BailRequestDto bailRequest = (BailRequestDto) request;
         Appartement appartement = appartementRepository.findById(bailRequest.getAppartementId())
                 .orElseThrow(() -> new RuntimeException("Appartement non trouvé"));
         Locataire locataire = locataireRepository.findById(bailRequest.getLocataireId())

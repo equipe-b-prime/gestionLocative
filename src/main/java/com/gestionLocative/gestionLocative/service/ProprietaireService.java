@@ -3,21 +3,30 @@ package com.gestionLocative.gestionLocative.service;
 import com.gestionLocative.gestionLocative.entity.Proprietaire;
 import com.gestionLocative.gestionLocative.dto.ProprietaireRequestDto;
 import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
-import lombok.RequiredArgsConstructor;
+import com.gestionLocative.gestionLocative.dto.RequestDto;
+import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import com.gestionLocative.gestionLocative.repository.ProprietaireRepository;
 
 /**
  * Service métier gérant les propriétaires.
- * Fournit les opérations CRUD ainsi que les conversions entité/DTO.
+ * Fournit la création, la modification, la suppression et les conversions entité/DTO.
  */
 @Service
-@RequiredArgsConstructor
-public class ProprietaireService {
+public class ProprietaireService extends AbstractCrudService {
 
     private final ProprietaireRepository proprietaireRepository;
+
+    /**
+     * Constructeur injectant le repository des propriétaires.
+     *
+     * @param proprietaireRepository le repository des propriétaires
+     */
+    public ProprietaireService(ProprietaireRepository proprietaireRepository) {
+        super(proprietaireRepository);
+        this.proprietaireRepository = proprietaireRepository;
+    }
 
     /**
      * Convertit une requête de propriétaire en entité.
@@ -40,7 +49,9 @@ public class ProprietaireService {
      * @param proprietaire L'entité du propriétaire.
      * @return ProprietaireResponseDto Les détails du propriétaire converti.
      */
-    public ProprietaireResponseDto toDto(Proprietaire proprietaire) {
+    @Override
+    public ResponseDto toDto(Object entity) {
+        Proprietaire proprietaire = (Proprietaire) entity;
         return ProprietaireResponseDto.builder()
                 .id(proprietaire.getId())
                 .nom(proprietaire.getNom())
@@ -50,41 +61,8 @@ public class ProprietaireService {
                 .build();
     }
 
-    /**
-     * Récupère la liste de tous les propriétaires.
-     *
-     * @return List<ProprietaireResponseDto> La liste des propriétaires récupérés.
-     */
-    public List<ProprietaireResponseDto> getAllProprietaires() {
-        return proprietaireRepository.findAll().stream()
-                .map(this::toDto)
-                .toList();
-    }
 
-    /**
-     * Récupère un propriétaire à partir de son identifiant.
-     *
-     * @param id L'identifiant du propriétaire à récupérer.
-     * @return ProprietaireResponseDto Les détails du propriétaire récupéré.
-     */
-    public ProprietaireResponseDto getProprietaireById(Long id) {
-        Proprietaire proprietaire = proprietaireRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
-        return toDto(proprietaire);
-    }
 
-    /**
-     * Supprime un propriétaire à partir de son identifiant.
-     *
-     * @param id L'identifiant du propriétaire à supprimer.
-     * @return ProprietaireResponseDto Les détails du propriétaire supprimé.
-     */
-    public ProprietaireResponseDto deleteById(Long id) {
-        Proprietaire proprietaire = proprietaireRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
-        proprietaireRepository.deleteById(id);
-        return toDto(proprietaire);
-    }
 
     /**
      * Met à jour un propriétaire à partir de son identifiant et des nouvelles données.
@@ -93,7 +71,9 @@ public class ProprietaireService {
      * @param proprietaireRequest Les nouvelles données du propriétaire.
      * @return ProprietaireResponseDto Les détails du propriétaire mis à jour.
      */
-    public ProprietaireResponseDto updateById(Long id, ProprietaireRequestDto proprietaireRequest) {
+    @Override
+    public ResponseDto update(Long id, RequestDto request) {
+        ProprietaireRequestDto proprietaireRequest = (ProprietaireRequestDto) request;
         Proprietaire proprietaire = proprietaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
         proprietaire.setNom(proprietaireRequest.getNom());
@@ -109,7 +89,9 @@ public class ProprietaireService {
      * @param proprietaireRequest Les données du propriétaire à créer.
      * @return ProprietaireResponseDto Les détails du propriétaire créé.
      */
-    public ProprietaireResponseDto createById(ProprietaireRequestDto proprietaireRequest) {
+    @Override
+    public ResponseDto create(RequestDto request) {
+        ProprietaireRequestDto proprietaireRequest = (ProprietaireRequestDto) request;
         Proprietaire proprietaire = toEntity(proprietaireRequest);
         return toDto(proprietaireRepository.save(proprietaire));
     }
