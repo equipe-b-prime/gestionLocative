@@ -1,5 +1,8 @@
 package com.gestionLocative.gestionLocative.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gestionLocative.gestionLocative.dto.AppartementRequestDto;
 import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
 import com.gestionLocative.gestionLocative.entity.Appartement;
@@ -108,11 +111,11 @@ public class AppartementService extends AbstractCrudService {
     public ResponseDto update(Long id, RequestDto request) {
         AppartementRequestDto appartementRequest = (AppartementRequestDto) request;
         Proprietaire proprietaire = proprietaireRepository.findById(appartementRequest.getProprietaireId())
-                .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Propriétaire non trouvé"));
         Immeuble immeuble = immeubleRepository.findById(appartementRequest.getImmeubleId())
-                .orElseThrow(() -> new RuntimeException("Immeuble non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Immeuble non trouvé"));
         Appartement appartement = appartementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appartement non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appartement non trouvé"));
         appartement.setNom(appartementRequest.getNom());
         appartement.setSurface(appartementRequest.getSurface());
         appartement.setNbPieces(appartementRequest.getNbPieces());
@@ -133,9 +136,9 @@ public class AppartementService extends AbstractCrudService {
     public ResponseDto create(RequestDto request) {
         AppartementRequestDto appartementRequest = (AppartementRequestDto) request;
         Proprietaire proprietaire = proprietaireRepository.findById(appartementRequest.getProprietaireId())
-                .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Propriétaire non trouvé"));
         Immeuble immeuble = immeubleRepository.findById(appartementRequest.getImmeubleId())
-                .orElseThrow(() -> new RuntimeException("Immeuble non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Immeuble non trouvé"));
         Appartement appartement = toEntity(appartementRequest, proprietaire, immeuble);
         return toDto(appartementRepository.save(appartement));
     }

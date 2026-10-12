@@ -1,5 +1,8 @@
 package com.gestionLocative.gestionLocative.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
@@ -51,7 +54,7 @@ public abstract class AbstractCrudService implements CrudService{
      * @throws Throwable pour gérer les exceptions génériques levées par le orElseThrow
      */
     public ResponseDto getById(Long id) throws Throwable {
-        Object entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Élément non trouvé"));
+        Object entity = repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Élément non trouvé"));
         return toDto(entity);
     }
     /**
@@ -65,7 +68,7 @@ public abstract class AbstractCrudService implements CrudService{
      */
     public ResponseDto delete(Long id) throws Throwable {
         Object entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Élément non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Élément non trouvé"));
         repository.deleteById(id);
         return toDto(entity);
     }

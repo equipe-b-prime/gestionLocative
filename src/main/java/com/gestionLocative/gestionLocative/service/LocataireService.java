@@ -1,5 +1,8 @@
 package com.gestionLocative.gestionLocative.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gestionLocative.gestionLocative.repository.BailRepository;
 import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
 import com.gestionLocative.gestionLocative.dto.BailResponseDto;
@@ -86,7 +89,7 @@ public class LocataireService extends AbstractCrudService {
     public ResponseDto update(Long id, RequestDto request) {
         LocataireRequestDto locataireRequest = (LocataireRequestDto) request;
         Locataire locataire = locataireRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Locataire non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Locataire non trouvé"));
         locataire.setNom(locataireRequest.getNom());
         locataire.setPrenom(locataireRequest.getPrenom());
         locataire.setNumero(locataireRequest.getNumero());

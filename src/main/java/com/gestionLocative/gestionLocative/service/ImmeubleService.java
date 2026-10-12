@@ -1,5 +1,8 @@
 package com.gestionLocative.gestionLocative.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gestionLocative.gestionLocative.repository.AppartementRepository;
 import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
 import com.gestionLocative.gestionLocative.entity.Immeuble;
@@ -83,7 +86,7 @@ public class ImmeubleService extends AbstractCrudService {
     public ResponseDto update(Long id, RequestDto request) {
         ImmeubleRequestDto immeubleRequest = (ImmeubleRequestDto) request;
         Immeuble immeuble = immeubleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Immeuble non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Immeuble non trouvé"));
         immeuble.setNom(immeubleRequest.getNom());
         immeuble.setAdresse(immeubleRequest.getAdresse());
         immeuble.setNbEtages(immeubleRequest.getNbEtages());

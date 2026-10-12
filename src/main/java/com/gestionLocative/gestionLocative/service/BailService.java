@@ -1,5 +1,8 @@
 package com.gestionLocative.gestionLocative.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gestionLocative.gestionLocative.repository.AppartementRepository;
 import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
 import com.gestionLocative.gestionLocative.dto.BailRequestDto;
@@ -132,11 +135,11 @@ public class BailService extends AbstractCrudService {
     public ResponseDto update(Long id, RequestDto request) {
         BailRequestDto bailRequest = (BailRequestDto) request;
         Appartement appartement = appartementRepository.findById(bailRequest.getAppartementId())
-                .orElseThrow(() -> new RuntimeException("Appartement non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appartement non trouvé"));
         Locataire locataire = locataireRepository.findById(bailRequest.getLocataireId())
-                .orElseThrow(() -> new RuntimeException("Locataire non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Locataire non trouvé"));
         Bail bail = bailRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bail non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bail non trouvé"));
         bail.setDateDebut(bailRequest.getDateDebut());
         bail.setDateFin(bailRequest.getDateFin());
         bail.setMontantLoyer(bailRequest.getMontantLoyer());
@@ -158,9 +161,9 @@ public class BailService extends AbstractCrudService {
     public ResponseDto create(RequestDto request) {
         BailRequestDto bailRequest = (BailRequestDto) request;
         Appartement appartement = appartementRepository.findById(bailRequest.getAppartementId())
-                .orElseThrow(() -> new RuntimeException("Appartement non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appartement non trouvé"));
         Locataire locataire = locataireRepository.findById(bailRequest.getLocataireId())
-                .orElseThrow(() -> new RuntimeException("Locataire non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Locataire non trouvé"));
         Bail bail = toEntity(bailRequest, appartement, locataire);
         return toDto(bailRepository.save(bail));
     }

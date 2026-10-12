@@ -1,5 +1,8 @@
 package com.gestionLocative.gestionLocative.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gestionLocative.gestionLocative.entity.Proprietaire;
 import com.gestionLocative.gestionLocative.dto.ProprietaireRequestDto;
 import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
@@ -75,7 +78,7 @@ public class ProprietaireService extends AbstractCrudService {
     public ResponseDto update(Long id, RequestDto request) {
         ProprietaireRequestDto proprietaireRequest = (ProprietaireRequestDto) request;
         Proprietaire proprietaire = proprietaireRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Propriétaire non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Propriétaire non trouvé"));
         proprietaire.setNom(proprietaireRequest.getNom());
         proprietaire.setPrenom(proprietaireRequest.getPrenom());
         proprietaire.setNumero(proprietaireRequest.getNumero());
