@@ -5,11 +5,14 @@ import lombok.*;
 
 import java.math.BigDecimal;
 /**
- * Représente la quittance d'un loyer pour un locataire
+ * Représente la quittance d'un loyer pour un locataire.
+ * Une quittance peut recevoir plusieurs paiements partiels.
  */
 
 @Entity
-@Table(name = "quittance")
+@Table(name = "quittance", indexes = {
+        @Index(name = "idx_quittance_bail", columnList = "bail_id")
+})
 @Getter
 @Setter
 @Builder

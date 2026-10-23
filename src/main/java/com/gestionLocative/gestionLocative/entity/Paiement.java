@@ -6,10 +6,13 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 /**
- * Représente  le paiement d'un loyer par un locataire
+ * Représente le paiement d'un loyer par un locataire.
+ * Plusieurs paiements peuvent être rattachés à une même quittance.
  */
 @Entity
-@Table(name = "paiement")
+@Table(name = "paiement", indexes = {
+        @Index(name = "idx_paiement_quittance", columnList = "quittance_id")
+})
 @Getter
 @Setter
 @Builder

@@ -20,7 +20,8 @@ public class Proprietaire {
     private String nom;
     @Column(nullable = false)
     private String prenom;
-    @Column(nullable = false)
+    @Column(nullable = false,unique = true)
     private String numero;
-    private String adresse;
+    @Column(unique = true,nullable = false)
+    private String email;
 }

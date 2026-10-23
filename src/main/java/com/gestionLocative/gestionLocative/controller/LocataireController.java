@@ -1,11 +1,14 @@
 package com.gestionLocative.gestionLocative.controller;
 
+import com.gestionLocative.gestionLocative.exception.NotFoundException;
 import com.gestionLocative.gestionLocative.dto.LocataireRequestDto;
+import com.gestionLocative.gestionLocative.dto.Response;
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import com.gestionLocative.gestionLocative.service.LocataireService;
+import com.gestionLocative.gestionLocative.service.LocataireStatsService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 /**
  * Contrôleur REST pour la gestion des locataires.
@@ -15,24 +18,30 @@ import java.util.List;
 public class LocataireController {
 
     private final LocataireService locataireService;
+    private final LocataireStatsService locataireStatsService;
 
     /**
-     * Constructeur injectant le service des locataires.
+     * Constructeur injectant le service des locataires et celui des statistiques de situation.
      *
      * @param locataireService le service des locataires
+     * @param locataireStatsService le service des statistiques financières du locataire
      */
-    public LocataireController(LocataireService locataireService) {
+    public LocataireController(LocataireService locataireService, LocataireStatsService locataireStatsService) {
         this.locataireService = locataireService;
+        this.locataireStatsService = locataireStatsService;
     }
 
     /**
-     * Récupère la liste de tous les locataires.
+     * Récupère une page de locataires.
      *
-     * @return la liste des locataires
+     * @param page l'index de la page souhaitée (0 par défaut)
+     * @param taille le nombre d'éléments par page (10 par défaut, borné à 100)
+     * @return Response<ResponseDto> La page des locataires encapsulée.
      */
     @GetMapping
-    public List<ResponseDto> getAll() {
-        return locataireService.getAll();
+    public Response<ResponseDto> getAll(@RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "10") int taille) {
+        return new Response<>(locataireService.getAll(page, taille).getContent());
     }
 
     /**
@@ -40,11 +49,11 @@ public class LocataireController {
      *
      * @param id l'identifiant du locataire
      * @return le locataire trouvé
-     * @throws Throwable si le locataire n'est pas trouvé
+     * @throws NotFoundException si le locataire n'est pas trouvé
      */
     @GetMapping("/{id}")
-    public ResponseDto getById(@PathVariable Long id) throws Throwable {
-        return locataireService.getById(id);
+    public Response<ResponseDto> getById(@PathVariable Long id) {
+        return new Response<>(locataireService.getById(id));
     }
 
     /**
@@ -54,8 +63,8 @@ public class LocataireController {
      * @return le locataire créé
      */
     @PostMapping
-    public ResponseDto create(@RequestBody LocataireRequestDto locataireRequest) {
-        return locataireService.create(locataireRequest);
+    public Response<ResponseDto> create(@Valid  @RequestBody LocataireRequestDto locataireRequest) {
+        return new Response<>(locataireService.create(locataireRequest));
     }
 
     /**
@@ -66,8 +75,8 @@ public class LocataireController {
      * @return le locataire modifié
      */
     @PutMapping("/{id}")
-    public ResponseDto update(@PathVariable Long id, @RequestBody LocataireRequestDto locataireRequest) {
-        return locataireService.update(id, locataireRequest);
+    public Response<ResponseDto> update(@PathVariable Long id, @Valid @RequestBody LocataireRequestDto locataireRequest) {
+        return new Response<>(locataireService.update(id, locataireRequest));
     }
 
     /**
@@ -75,10 +84,23 @@ public class LocataireController {
      *
      * @param id l'identifiant du locataire
      * @return le locataire supprimé
-     * @throws Throwable si le locataire n'est pas trouvé
+     * @throws NotFoundException si le locataire n'est pas trouvé
      */
     @DeleteMapping("/{id}")
-    public ResponseDto delete(@PathVariable Long id) throws Throwable {
-        return locataireService.delete(id);
+    public Response<ResponseDto> delete(@PathVariable Long id) {
+        return new Response<>(locataireService.delete(id));
+    }
+
+    /**
+     * Récupère la situation financière agrégée d'un locataire
+     * depuis la vue v_locataire_situation (baux, quittances, encaissé, reste du).
+     *
+     * @param id l'identifiant du locataire
+     * @return la situation financière du locataire
+     * @throws NotFoundException si le locataire n'est pas trouvé dans la vue
+     */
+    @GetMapping("/{id}/stats")
+    public Response<ResponseDto> getStats(@PathVariable Long id) {
+        return new Response<>(locataireStatsService.getLocataireStats(id));
     }
 }

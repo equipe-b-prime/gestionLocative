@@ -1,11 +1,14 @@
 package com.gestionLocative.gestionLocative.controller;
 
+import com.gestionLocative.gestionLocative.exception.NotFoundException;
 import com.gestionLocative.gestionLocative.dto.BailRequestDto;
+import com.gestionLocative.gestionLocative.dto.Response;
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import com.gestionLocative.gestionLocative.service.BailService;
+import com.gestionLocative.gestionLocative.service.BailStatsService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 /**
  * Contrôleur REST pour la gestion des baux.
@@ -15,24 +18,32 @@ import java.util.List;
 public class BailController {
 
     private final BailService bailService;
+    private final BailStatsService bailStatsService;
 
     /**
-     * Constructeur injectant le service des baux.
+     * Constructeur injectant le service des baux et celui des statistiques financières.
      *
      * @param bailService le service des baux
+     * @param bailStatsService le service des statistiques financières du bail
      */
-    public BailController(BailService bailService) {
+    public BailController(BailService bailService, BailStatsService bailStatsService) {
         this.bailService = bailService;
+        this.bailStatsService = bailStatsService;
     }
 
     /**
-     * Récupère la liste de tous les baux.
+     * Récupère une page de baux, triés selon un critère donné.
      *
-     * @return la liste des baux
+     * @param page l'index de la page souhaitée (0 par défaut)
+     * @param taille le nombre d'éléments par page (10 par défaut, borné à 100)
+     * @param sort le tri sous la forme "propriete,direction" (ex: dateDebut,desc)
+     * @return Response<ResponseDto> La page des baux encapsulée.
      */
     @GetMapping
-    public List<ResponseDto> getAll() {
-        return bailService.getAll();
+    public Response<ResponseDto> getAll(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "10") int taille,
+                                        @RequestParam(required = false) String sort) {
+        return new Response<>(bailService.getAll(page, taille, sort).getContent());
     }
 
     /**
@@ -40,11 +51,11 @@ public class BailController {
      *
      * @param id l'identifiant du bail
      * @return le bail trouvé
-     * @throws Throwable si le bail n'est pas trouvé
+     * @throws NotFoundException si le bail n'est pas trouvé
      */
     @GetMapping("/{id}")
-    public ResponseDto getById(@PathVariable Long id) throws Throwable {
-        return bailService.getById(id);
+    public Response<ResponseDto>  getById(@PathVariable Long id) {
+        return new Response<>(bailService.getById(id));
     }
 
     /**
@@ -54,8 +65,8 @@ public class BailController {
      * @return le bail créé
      */
     @PostMapping
-    public ResponseDto create(@RequestBody BailRequestDto bailRequest) {
-        return bailService.create(bailRequest);
+    public Response<ResponseDto>  create(@Valid  @RequestBody BailRequestDto bailRequest) {
+        return new Response<>(bailService.create(bailRequest));
     }
 
     /**
@@ -66,8 +77,8 @@ public class BailController {
      * @return le bail modifié
      */
     @PutMapping("/{id}")
-    public ResponseDto update(@PathVariable Long id, @RequestBody BailRequestDto bailRequest) {
-        return bailService.update(id, bailRequest);
+    public Response<ResponseDto>  update(@PathVariable Long id, @Valid @RequestBody BailRequestDto bailRequest) {
+        return new Response<>(bailService.update(id, bailRequest));
     }
 
     /**
@@ -75,10 +86,23 @@ public class BailController {
      *
      * @param id l'identifiant du bail
      * @return le bail supprimé
-     * @throws Throwable si le bail n'est pas trouvé
+     * @throws NotFoundException si le bail n'est pas trouvé
      */
     @DeleteMapping("/{id}")
-    public ResponseDto delete(@PathVariable Long id) throws Throwable {
-        return bailService.delete(id);
+    public Response<ResponseDto>  delete(@PathVariable Long id) {
+        return new Response<>(bailService.delete(id));
+    }
+
+    /**
+     * Récupère la situation financière agrégée d'un bail
+     * depuis la vue v_bail_financier (facturé, encaissé, reste du, quittances non payées).
+     *
+     * @param id l'identifiant du bail
+     * @return la situation financière du bail
+     * @throws NotFoundException si le bail n'est pas trouvé dans la vue
+     */
+    @GetMapping("/{id}/stats")
+    public Response<ResponseDto> getStats(@PathVariable Long id) {
+        return new Response<>(bailStatsService.getBailStats(id));
     }
 }

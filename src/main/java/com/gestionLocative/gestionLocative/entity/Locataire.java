@@ -2,6 +2,9 @@ package com.gestionLocative.gestionLocative.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.UncheckedIOException;
+
 /**
  * Représente  le locataire d'un appartement
  */
@@ -20,7 +23,8 @@ public class Locataire {
     private String nom;
     @Column(nullable = false)
     private String prenom;
-    @Column(nullable = false)
+    @Column(nullable = false,unique = true)
     private String numero;
+    @Column(unique = true)
     private String email;
 }

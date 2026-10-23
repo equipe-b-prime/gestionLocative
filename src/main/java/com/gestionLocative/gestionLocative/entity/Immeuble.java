@@ -3,10 +3,14 @@ package com.gestionLocative.gestionLocative.entity;
 import jakarta.persistence.*;
 import lombok.*;
 /**
- * Représente  un immeuble appartenant à un propriétaire et pouvant contenir plusieurs appartements
+ * Représente un immeuble appartenant à un propriétaire et pouvant contenir plusieurs appartements
  */
 @Entity
-@Table(name = "immeuble")
+@Table(name = "immeuble",uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"nom", "adresse"})
+}, indexes = {
+        @Index(name = "idx_immeuble_proprietaire", columnList = "proprietaire_id")
+})
 @Getter
 @Setter
 @Builder
@@ -22,4 +26,7 @@ public class Immeuble {
     private String adresse;
     @Column(name = "nb_etages")
     private Integer nbEtages;
+    @ManyToOne
+    @JoinColumn(name = "proprietaire_id")
+    private Proprietaire proprietaire;
 }

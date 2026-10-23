@@ -6,10 +6,14 @@ import lombok.*;
 import java.math.BigDecimal;
 /**
  * Représente un appartement dans le système de gestion locative.
- * Un appartement est associé à un propriétaire et à un immeuble.
+ * Un appartement est associé à un immeuble.
  */
 @Entity
-@Table(name = "appartement")
+@Table(name = "appartement",uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"nom", "immeuble_id"})
+}, indexes = {
+        @Index(name = "idx_appartement_immeuble", columnList = "immeuble_id")
+})
 @Getter
 @Setter
 @Builder
@@ -19,14 +23,13 @@ public class Appartement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String nom;
     private BigDecimal surface;
     @Column(name = "nb_pieces")
     private int nbPieces;
+    @Column(nullable = false)
     private int etage;
-    @ManyToOne
-    @JoinColumn(name = "proprietaire_id")
-    private Proprietaire proprietaire;
     @ManyToOne
     @JoinColumn(name = "immeuble_id")
     private Immeuble immeuble;

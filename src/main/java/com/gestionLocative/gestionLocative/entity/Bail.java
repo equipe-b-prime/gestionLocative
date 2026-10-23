@@ -6,10 +6,13 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.Date;
 /**
- * Représente le contart entre un  locotaire et un appartement
+ * Représente le contrat entre un locataire et un appartement.
  */
 @Entity
-@Table(name = "bail")
+@Table(name = "bail", indexes = {
+        @Index(name = "idx_bail_appartement", columnList = "appartement_id"),
+        @Index(name = "idx_bail_locataire", columnList = "locataire_id")
+})
 @Getter
 @Setter
 @Builder

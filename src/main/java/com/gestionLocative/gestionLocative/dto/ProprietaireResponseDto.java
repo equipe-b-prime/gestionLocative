@@ -15,5 +15,5 @@ public class ProprietaireResponseDto implements ResponseDto {
     private String nom;
     private String prenom;
     private String numero;
-    private String adresse;
+    private String email;
 }

@@ -2,13 +2,14 @@ package com.gestionLocative.gestionLocative.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-/**
- * Représente a associé un locataire
- */
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+/**
+ * Représente un état des lieux rattaché à un locataire.
+ */
 @Entity
-@Table(name = "Etat_les_lieux")
+@Table(name = "etat_les_lieux")
 @Getter
 @Setter
 @Builder
