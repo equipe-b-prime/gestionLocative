@@ -266,4 +266,21 @@ public Page<ResponseDto> findBySearchCriteria(int page, int taille, Double surfa
                         .build())
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Récupère les appartements libres à une date donnée.
+     *
+     * @param date La date de référence (aujourd'hui si null).
+     * @return La liste des appartements libres convertis en DTO.
+     */
+    public List<ResponseDto> getLibres(java.time.LocalDate date) {
+        java.time.LocalDate ref = date != null ? date : java.time.LocalDate.now();
+        // Conversion LocalDate → java.util.Date pour la requête JPQL
+        java.util.Date refDate = java.util.Date.from(
+                ref.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+        return bailRepository.findLibresByDate(refDate).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }
+

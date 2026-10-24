@@ -11,7 +11,7 @@ import java.util.Date;
  * Un appartement est associé à un immeuble.
  */
 @Entity
-@Table(name = "appartement",uniqueConstraints = {
+@Table(name = "appartement", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"nom", "immeuble_id"})
 }, indexes = {
         @Index(name = "idx_appartement_immeuble", columnList = "immeuble_id")

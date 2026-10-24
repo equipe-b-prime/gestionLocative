@@ -2,11 +2,12 @@ package com.gestionLocative.gestionLocative.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 /**
  * Représente un immeuble appartenant à un propriétaire et pouvant contenir plusieurs appartements
  */
 @Entity
-@Table(name = "immeuble",uniqueConstraints = {
+@Table(name = "immeuble", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"nom", "adresse"})
 }, indexes = {
         @Index(name = "idx_immeuble_proprietaire", columnList = "proprietaire_id")

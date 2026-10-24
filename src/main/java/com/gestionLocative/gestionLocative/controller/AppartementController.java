@@ -1,16 +1,11 @@
 package com.gestionLocative.gestionLocative.controller;
 
 import com.gestionLocative.gestionLocative.dto.AppartementRequestDto;
-import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
-import com.gestionLocative.gestionLocative.dto.BailResponseDto;
 import com.gestionLocative.gestionLocative.dto.Response;
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import com.gestionLocative.gestionLocative.service.AppartementService;
+import com.gestionLocative.gestionLocative.service.BailService;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,9 +15,11 @@ import java.time.LocalDate;
 public class AppartementController {
 
     private final AppartementService appartementService;
+    private final BailService bailService;
 
-    public AppartementController(AppartementService appartementService) {
+    public AppartementController(AppartementService appartementService, BailService bailService) {
         this.appartementService = appartementService;
+        this.bailService = bailService;
     }
 
     @GetMapping
@@ -32,7 +29,6 @@ public class AppartementController {
                                        @RequestParam(required = false) Double surfaceMax,
                                        @RequestParam(required = false) Integer pieces) {
 
-        // Validation : surfaceMin > surfaceMax → 400
         if (surfaceMin != null && surfaceMax != null && surfaceMin > surfaceMax) {
             throw new IllegalArgumentException("La surface minimale ne peut pas être supérieure à la surface maximale.");
         }
@@ -66,8 +62,19 @@ public class AppartementController {
         return new Response<>(appartementService.getBauxByAppartement(id));
     }
 
+    /**
+     * F17. Appartements libres à une date donnée.
+     */
     @GetMapping("/libres")
     public Response<ResponseDto> getLibres(@RequestParam(required = false) LocalDate date) {
         return new Response<>(appartementService.getLibres(date));
+    }
+
+    /**
+     * F18. Reconstituer l'occupation d'un appartement.
+     */
+    @GetMapping("/{id}/occupation")
+    public Response<?> getOccupation(@PathVariable Long id) {
+        return new Response<>(bailService.getOccupationAppartement(id));
     }
 }

@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
 /**
  * Représente le contrat entre un locataire et un appartement.
  */

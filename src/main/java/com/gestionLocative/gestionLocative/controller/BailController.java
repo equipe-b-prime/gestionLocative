@@ -8,7 +8,7 @@ import com.gestionLocative.gestionLocative.service.BailService;
 import com.gestionLocative.gestionLocative.service.BailStatsService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
+import com.gestionLocative.gestionLocative.dto.RevenuImmeubleDto;
 
 /**
  * Contrôleur REST pour la gestion des baux.
@@ -133,5 +133,18 @@ public class BailController {
         return new Response<>(bailService.revision(id,
                 new java.math.BigDecimal(body.get("nouveauMontant")),
                 body.get("dateEffet")));
+    }
+
+    /**
+     * F19: Calcule le revenu locatif d'un immeuble sur un mois.
+     *
+     * @param id L'identifiant de limmeuble
+     * @param mois Le mois au format yyyy-MM (null = mois courant)
+     * @return Le revenu locatif avec dhail et taux dhbergement
+     */
+    @PostMapping("/{id}/revenu")
+    public Response<RevenuImmeubleDto> revenu(@PathVariable Long id,
+                                              @RequestParam(required = false) String mois) {
+        return new Response<>(bailService.getRevenuImmeuble(id, mois));
     }
 }

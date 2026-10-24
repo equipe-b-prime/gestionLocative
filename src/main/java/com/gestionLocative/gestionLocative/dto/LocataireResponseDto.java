@@ -3,7 +3,7 @@ package com.gestionLocative.gestionLocative.dto;
 import lombok.*;
 
 /**
- * Réponse contenant les données d'un locataire.
+ * DTO de réponse pour un locataire.
  */
 @Getter
 @Setter

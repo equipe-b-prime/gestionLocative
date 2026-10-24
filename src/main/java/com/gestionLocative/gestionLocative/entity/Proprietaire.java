@@ -2,8 +2,9 @@ package com.gestionLocative.gestionLocative.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 /**
- * Représente  le proprietaire d'un immeuble
+ * Représente le propriétaire d'un immeuble
  */
 @Entity
 @Table(name = "proprietaire")
@@ -20,8 +21,8 @@ public class Proprietaire {
     private String nom;
     @Column(nullable = false)
     private String prenom;
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false, unique = true)
     private String numero;
-    @Column(unique = true,nullable = false)
+    @Column(unique = true, nullable = false)
     private String email;
 }
