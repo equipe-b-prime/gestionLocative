@@ -32,6 +32,8 @@ public class Bail {
     private BigDecimal provisionCharges;
     @Column(name = "depot_garantie")
     private BigDecimal depotGarantie;
+    @Column(name = "date_cloture")
+    private Date dateCloture;
     @ManyToOne
     @JoinColumn(name = "appartement_id")
     private Appartement appartement;

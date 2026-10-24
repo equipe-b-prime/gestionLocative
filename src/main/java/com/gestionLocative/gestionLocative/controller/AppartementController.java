@@ -13,8 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/appartements")
@@ -65,5 +64,10 @@ public class AppartementController {
     @GetMapping("/{id}/baux")
     public Response<ResponseDto> getBaux(@PathVariable Long id) {
         return new Response<>(appartementService.getBauxByAppartement(id));
+    }
+
+    @GetMapping("/libres")
+    public Response<ResponseDto> getLibres(@RequestParam(required = false) LocalDate date) {
+        return new Response<>(appartementService.getLibres(date));
     }
 }

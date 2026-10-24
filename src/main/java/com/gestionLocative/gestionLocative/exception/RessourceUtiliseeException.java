@@ -4,7 +4,7 @@ package com.gestionLocative.gestionLocative.exception;
  * Exception levée lorsqu'une suppression est refusée car la ressource est
  * encore référencée par une autre ressource (dépendance en base de données).
  */
-    public class RessourceUtiliseeException extends RuntimeException {
+public class RessourceUtiliseeException extends RuntimeException {
 
     /**
      * Constructeur avec message d'erreur.

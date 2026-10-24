@@ -105,4 +105,33 @@ public class BailController {
     public Response<ResponseDto> getStats(@PathVariable Long id) {
         return new Response<>(bailStatsService.getBailStats(id));
     }
+
+    /**
+     * F13: Résilie un bail par anticipation avec une date d'effet.
+     */
+    @PostMapping("/{id}/resiliation")
+    public Response<ResponseDto> resiliation(@PathVariable Long id,
+                                             @RequestBody java.util.Map<String, String> body) {
+        return new Response<>(bailService.resiliation(id, body.get("dateEffet")));
+    }
+
+    /**
+     * F14: Renouvelle un bail en prolongeant sa date de fin.
+     */
+    @PostMapping("/{id}/renouvellement")
+    public Response<ResponseDto> renouvellement(@PathVariable Long id,
+                                                @RequestBody java.util.Map<String, String> body) {
+        return new Response<>(bailService.renouvellement(id, body.get("nouvelleDateFin")));
+    }
+
+    /**
+     * F15: Révise le loyer d'un bail.
+     */
+    @PostMapping("/{id}/revision")
+    public Response<ResponseDto> revision(@PathVariable Long id,
+                                          @RequestBody java.util.Map<String, String> body) {
+        return new Response<>(bailService.revision(id,
+                new java.math.BigDecimal(body.get("nouveauMontant")),
+                body.get("dateEffet")));
+    }
 }

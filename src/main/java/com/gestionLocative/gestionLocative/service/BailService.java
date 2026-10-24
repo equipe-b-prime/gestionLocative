@@ -1,7 +1,9 @@
 package com.gestionLocative.gestionLocative.service;
 
 import com.gestionLocative.gestionLocative.exception.NotFoundException;
+import com.gestionLocative.gestionLocative.exception.RequeteInvalideException;
 
+import com.gestionLocative.gestionLocative.repository.RevisionRepository;
 import com.gestionLocative.gestionLocative.repository.AppartementRepository;
 import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
 import com.gestionLocative.gestionLocative.dto.BailRequestDto;
@@ -9,6 +11,7 @@ import com.gestionLocative.gestionLocative.dto.BailResponseDto;
 import com.gestionLocative.gestionLocative.entity.Appartement;
 import com.gestionLocative.gestionLocative.entity.Bail;
 import com.gestionLocative.gestionLocative.entity.Locataire;
+import com.gestionLocative.gestionLocative.entity.Revision;
 import com.gestionLocative.gestionLocative.dto.ImmeubleResponseDto;
 import com.gestionLocative.gestionLocative.repository.LocataireRepository;
 import com.gestionLocative.gestionLocative.dto.LocataireResponseDto;
@@ -19,7 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
@@ -36,6 +42,7 @@ public class BailService extends AbstractCrudService {
     private final BailRepository bailRepository;
     private final AppartementRepository appartementRepository;
     private final LocataireRepository locataireRepository;
+    private final RevisionRepository revisionRepository;
 
     /**
      * Constructeur injectant les repositories du bail, de l'appartement et du locataire.
@@ -44,13 +51,15 @@ public class BailService extends AbstractCrudService {
      * @param appartementRepository le repository des appartements
      * @param locataireRepository le repository des locataires
      */
-    public BailService(BailRepository bailRepository,
-                       AppartementRepository appartementRepository,
-                       LocataireRepository locataireRepository) {
+public BailService(BailRepository bailRepository,
+                   AppartementRepository appartementRepository,
+                   LocataireRepository locataireRepository,
+                   RevisionRepository revisionRepository) {
         super(bailRepository);
-        this.bailRepository = bailRepository;
+this.bailRepository = bailRepository;
         this.appartementRepository = appartementRepository;
         this.locataireRepository = locataireRepository;
+        this.revisionRepository = revisionRepository;
     }
 
     /**
@@ -161,10 +170,33 @@ public class BailService extends AbstractCrudService {
         if (bailRequest.getDateFin() != null && !bailRequest.getDateFin().after(bailRequest.getDateDebut())) {
             throw new IllegalArgumentException("La date de fin doit être postérieure à la date de début.");
         }
-        for (Bail existant : bailRepository.findByAppartementId(bailRequest.getAppartementId())) {
-            if (chevauche(bailRequest.getDateDebut(), bailRequest.getDateFin(),
-                    existant.getDateDebut(), existant.getDateFin())) {
-                throw new IllegalArgumentException("L'appartement n'est pas libre sur la période demandée.");
+        // F11: Empêcher le chevauchement de baux
+        List<Bail> bauxExistants = bailRepository.findByAppartementId(bailRequest.getAppartementId());
+        for (Bail existant : bauxExistants) {
+            boolean overlap = false;
+            if (existant.getDateFin() == null) {
+                if (!bailRequest.getDateDebut().after(existant.getDateDebut())) {
+                    overlap = true;
+                }
+            } else {
+                if (chevauche(bailRequest.getDateDebut(), bailRequest.getDateFin(),
+                        existant.getDateDebut(), existant.getDateFin())) {
+                    overlap = true;
+                }
+            }
+            if (overlap) {
+                throw new IllegalArgumentException(
+                    "Bail existant du " + existant.getDateDebut() +
+                    " au " + existant.getDateFin() +
+                    " bloque la période demandée.");
+            }
+        }
+        // F12: Durée minimale d'un mois
+        if (bailRequest.getDateFin() != null) {
+            long jours = (bailRequest.getDateFin().getTime() - bailRequest.getDateDebut().getTime())
+                    / (1000L * 60 * 60 * 24);
+            if (jours < 30) {
+                throw new RequeteInvalideException("La durée minimum d'un bail est d'un mois");
             }
         }
         Bail bail = toEntity(bailRequest, appartement, locataire);
@@ -188,6 +220,14 @@ public class BailService extends AbstractCrudService {
                 .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
         if (bailRequest.getDateFin() != null && !bailRequest.getDateFin().after(bail.getDateDebut())) {
             throw new IllegalArgumentException("La date de fin doit être postérieure à la date de début.");
+        }
+        // F12: Durée minimale d'un mois
+        if (bailRequest.getDateFin() != null) {
+            long jours = (bailRequest.getDateFin().getTime() - bail.getDateDebut().getTime())
+                    / (1000L * 60 * 60 * 24);
+            if (jours < 30) {
+                throw new RequeteInvalideException("La durée minimum d'un bail est d'un mois");
+            }
         }
         if (nonCommence(bail)) {
             bail.setMontantLoyer(bailRequest.getMontantLoyer());
@@ -240,6 +280,136 @@ public class BailService extends AbstractCrudService {
         boolean debut1AvantFin2 = fin2 == null || debut1.before(fin2);
         boolean debut2AvantFin1 = fin1 == null || debut2.before(fin1);
         return debut1AvantFin2 && debut2AvantFin1;
+    }
+
+    /**
+     * F13: Résilie un bail par anticipation.
+     *
+     * @param id L'identifiant du bail.
+     * @param dateEffet La date d'effet de la résiliation (yyyy-MM-dd).
+     * @return Le bail résilié.
+     * @throws IllegalArgumentException 409 si le bail est déjà résilié ou non commencé,
+     *                                  ou si la date d'effet est hors période / passée.
+     */
+    public ResponseDto resiliation(Long id, String dateEffet) {
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
+        Date effets;
+        try {
+            effets = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(dateEffet);
+        } catch (java.text.ParseException e) {
+            throw new RequeteInvalideException("Format de date invalide, attendu yyyy-MM-dd");
+        }
+        if (bail.getDateFin() == null || effets.after(bail.getDateFin())) {
+            throw new IllegalArgumentException("Bail déjà résilié ou date d'effet hors période");
+        }
+        if (nonCommence(bail)) {
+            throw new IllegalArgumentException("Bail non commencé, impossible de résilier");
+        }
+        if (effets.before(bail.getDateDebut()) || effets.after(bail.getDateFin())) {
+            throw new IllegalArgumentException("Date d'effet doit être dans la période du bail");
+        }
+        if (effets.before(new Date())) {
+            throw new IllegalArgumentException("Date d'effet ne peut pas être antérieure à aujourd'hui");
+        }
+        bail.setDateFin(effets);
+        return toDto(bailRepository.save(bail));
+    }
+
+    /**
+     * F14: Renouvelle un bail en prolongeant sa date de fin.
+     *
+     * @param id L'identifiant du bail.
+     * @param nouvelleDateFin La nouvelle date de fin (yyyy-MM-dd).
+     * @return Le bail renouvelé.
+     * @throws IllegalArgumentException 409 si le bail est résilié ou si la période
+     *                                  ajoutée chevauche un autre bail.
+     */
+    public ResponseDto renouvellement(Long id, String nouvelleDateFin) {
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
+        Date nouvelleFin;
+        try {
+            nouvelleFin = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(nouvelleDateFin);
+        } catch (java.text.ParseException e) {
+            throw new RequeteInvalideException("Format de date invalide, attendu yyyy-MM-dd");
+        }
+        if (bail.getDateFin() == null || !nouvelleFin.after(bail.getDateFin())) {
+            throw new IllegalArgumentException(
+                "La nouvelle date doit être postérieure à la date de fin actuelle " + bail.getDateFin());
+        }
+        List<Bail> bauxExistants = bailRepository.findByAppartementId(bail.getAppartement().getId());
+        for (Bail existant : bauxExistants) {
+            if (!existant.getId().equals(id)) {
+                if (chevauche(bail.getDateFin(), nouvelleFin,
+                        existant.getDateDebut(), existant.getDateFin())) {
+                    throw new IllegalArgumentException(
+                        "Période ajoutée chevauche le bail " + existant.getId()
+                        + " du " + existant.getDateDebut() + " au " + existant.getDateFin());
+                }
+            }
+        }
+        bail.setDateFin(nouvelleFin);
+        return toDto(bailRepository.save(bail));
+    }
+
+    /**
+     * F15: Révise le loyer d'un bail.
+     *
+     * @param id L'identifiant du bail.
+     * @param nouveauMontant Le nouveau montant du loyer.
+     * @param dateEffet La date d'effet de la révision (yyyy-MM-dd).
+     * @return Le bail avec le nouveau montant.
+     * @throws IllegalArgumentException 400 si le montant n'est pas positif,
+     *                                  409 si la date d'effet est hors période.
+     */
+    public ResponseDto revision(Long id, java.math.BigDecimal nouveauMontant, String dateEffet) {
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
+        if (nouveauMontant == null || nouveauMontant.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new RequeteInvalideException("Le montant doit être strictement positif");
+        }
+        Date effets;
+        try {
+            effets = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(dateEffet);
+        } catch (java.text.ParseException e) {
+            throw new RequeteInvalideException("Format de date invalide, attendu yyyy-MM-dd");
+        }
+        if (effets.before(bail.getDateDebut()) || (bail.getDateFin() != null && effets.after(bail.getDateFin()))) {
+            throw new IllegalArgumentException("Date d'effet doit être comprise dans la période du bail");
+        }
+        bail.setMontantLoyer(nouveauMontant);
+        bailRepository.save(bail);
+        // Enregistrer l'historique de révision
+        Revision revision = Revision.builder()
+                .bail(bail)
+                .dateEffet(effets)
+                .montantLoyer(nouveauMontant)
+                .build();
+        revisionRepository.save(revision);
+        return toDto(bailRepository.save(bail));
+    }
+
+    private static final Logger log = LoggerFactory.getLogger(BailService.class);
+
+    /**
+     * F16: Clôture les baux arrivés à terme (exécutée chaque nuit à minuit).
+     * Tout bail dont la date de fin est antérieure à aujourd'hui et qui n'a pas
+     * encore de date de clôture passe en statut clôturé.
+     */
+    @Scheduled(cron = "0 0 0 * * *")
+    public void cloturerBauxTermines() {
+        Date aujourdhui = new Date();
+        List<Bail> bauxTermines = bailRepository.findAll().stream()
+                .filter(b -> b.getDateFin() != null && b.getDateFin().before(aujourdhui)
+                        && b.getDateCloture() == null)
+                .toList();
+        for (Bail bail : bauxTermines) {
+            bail.setDateCloture(aujourdhui);
+            bailRepository.save(bail);
+            log.info("Bail {} clôturé le {} (date de fin : {})",
+                    bail.getId(), aujourdhui, bail.getDateFin());
+        }
     }
 
     /**
