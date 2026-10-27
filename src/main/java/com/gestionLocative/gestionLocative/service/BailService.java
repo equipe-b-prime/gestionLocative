@@ -5,6 +5,7 @@ import com.gestionLocative.gestionLocative.entity.*;
 import com.gestionLocative.gestionLocative.exception.NotFoundException;
 import com.gestionLocative.gestionLocative.exception.RequeteInvalideException;
 import com.gestionLocative.gestionLocative.repository.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,48 +22,24 @@ public class BailService extends AbstractCrudService {
     private final BailRepository bailRepository;
     private final AppartementRepository appartementRepository;
     private final LocataireRepository locataireRepository;
-    private final ProprietaireRepository proprietaireRepository;
-    private final ImmeubleRepository immeubleRepository;
+    private final ImmeubleService immeubleService;
+    private final AppartementService appartementService;
 
     public BailService(BailRepository bailRepository,
                        AppartementRepository appartementRepository,
                        LocataireRepository locataireRepository,
-                       ProprietaireRepository proprietaireRepository,
-                       ImmeubleRepository immeubleRepository) {
+                       @Lazy ImmeubleService immeubleService,
+                       @Lazy AppartementService appartementService) {
         super(bailRepository);
         this.bailRepository = bailRepository;
         this.appartementRepository = appartementRepository;
         this.locataireRepository = locataireRepository;
-        this.proprietaireRepository = proprietaireRepository;
-        this.immeubleRepository = immeubleRepository;
-    }
-
-    private ProprietaireResponseDto toProprietaireDto(Proprietaire p) {
-        if (p == null) return null;
-        return ProprietaireResponseDto.builder()
-                .id(p.getId()).nom(p.getNom()).prenom(p.getPrenom())
-                .numero(p.getNumero()).email(p.getEmail()).build();
-    }
-
-    private ImmeubleResponseDto toImmeubleDto(Immeuble i) {
-        Proprietaire pi = i.getProprietaireId() != null
-                ? proprietaireRepository.findById(i.getProprietaireId()).orElse(null) : null;
-        return ImmeubleResponseDto.builder()
-                .id(i.getId()).nom(i.getNom()).adresse(i.getAdresse())
-                .nbEtages(i.getNbEtages()).proprietaireId(i.getProprietaireId())
-                .proprietaire(toProprietaireDto(pi))
-                .nbAppartements(appartementRepository.countByImmeubleId(i.getId()))
-                .build();
+        this.immeubleService = immeubleService;
+        this.appartementService = appartementService;
     }
 
     private AppartementResponseDto toAppartementDto(Appartement a) {
-        Proprietaire p = a.getProprietaire();
-        return AppartementResponseDto.builder()
-                .id(a.getId()).nom(a.getNom()).surface(a.getSurface())
-                .nbPieces(a.getNbPieces()).etage(a.getEtage())
-                .proprietaire(toProprietaireDto(p))
-                .immeuble(toImmeubleDto(a.getImmeuble()))
-                .build();
+        return (AppartementResponseDto) appartementService.toDto(a);
     }
 
     @Override
