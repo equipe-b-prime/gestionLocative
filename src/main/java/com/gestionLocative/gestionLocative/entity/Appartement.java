@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Date;
 /**
  * Représente un appartement dans le système de gestion locative.
  * Un appartement est associé à un propriétaire et à un immeuble.
@@ -30,4 +31,11 @@ public class Appartement {
     @ManyToOne
     @JoinColumn(name = "immeuble_id")
     private Immeuble immeuble;
+    @Column(name = "date_creation", nullable = false, updatable = false)
+    private Date dateCreation;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dateCreation = new Date();
+    }
 }
