@@ -5,11 +5,18 @@ import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
 import com.gestionLocative.gestionLocative.dto.RequestDto;
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import com.gestionLocative.gestionLocative.entity.Proprietaire;
+import com.gestionLocative.gestionLocative.entity.Immeuble;
+import com.gestionLocative.gestionLocative.dto.ImmeubleResponseDto;
 import com.gestionLocative.gestionLocative.exception.DoublonRessourceException;
 import com.gestionLocative.gestionLocative.exception.NotFoundException;
 import com.gestionLocative.gestionLocative.exception.RessourceUtiliseeException;
 import com.gestionLocative.gestionLocative.repository.ImmeubleRepository;
+import com.gestionLocative.gestionLocative.repository.AppartementRepository;
+import com.gestionLocative.gestionLocative.repository.BailRepository;
 import com.gestionLocative.gestionLocative.repository.ProprietaireRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +25,18 @@ public class ProprietaireService extends AbstractCrudService {
 
     private final ProprietaireRepository proprietaireRepository;
     private final ImmeubleRepository immeubleRepository;
+    private final AppartementRepository appartementRepository;
+    private final BailRepository bailRepository;
 
     public ProprietaireService(ProprietaireRepository proprietaireRepository,
-                               ImmeubleRepository immeubleRepository) {
+                               ImmeubleRepository immeubleRepository,
+                               AppartementRepository appartementRepository,
+                               BailRepository bailRepository) {
         super(proprietaireRepository);
         this.proprietaireRepository = proprietaireRepository;
         this.immeubleRepository = immeubleRepository;
+        this.appartementRepository = appartementRepository;
+        this.bailRepository = bailRepository;
     }
 
     public Proprietaire toEntity(ProprietaireRequestDto dto) {
@@ -85,5 +98,26 @@ public class ProprietaireService extends AbstractCrudService {
         }
         proprietaireRepository.deleteById(id);
         return toDto(proprietaire);
+    }
+
+    public List<ResponseDto> getImmeublesByProprietaire(Long id) {
+        List<Immeuble> immeubles = immeubleRepository.findByProprietaireId(id);
+        LocalDateTime maintenant = LocalDateTime.now();
+        return immeubles.stream()
+                .map(immeuble -> {
+                    ImmeubleResponseDto dto = ImmeubleResponseDto.builder()
+                            .id(immeuble.getId())
+                            .nom(immeuble.getNom())
+                            .adresse(immeuble.getAdresse())
+                            .nbEtages(immeuble.getNbEtages())
+                            .proprietaireId(immeuble.getProprietaireId())
+                            .nbAppartements(appartementRepository.countByImmeubleId(immeuble.getId()))
+                            .nbBauxEnCours(0L)
+                            .build();
+                    long nbBauxEnCours = bailRepository.countBauxEnCoursParImmeuble(immeuble.getId(), maintenant);
+                    dto.setNbBauxEnCours(nbBauxEnCours);
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

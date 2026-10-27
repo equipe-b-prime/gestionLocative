@@ -21,11 +21,22 @@ public class BailController {
         this.bailService = bailService;
     }
 
-    @Operation(summary = "Lister les baux", description = "Retourne la liste paginée des baux triée par date de début décroissante")
+    @Operation(summary = "Lister les baux", description = "Retourne la liste paginée des baux avec tri paramétrable (ex: sort=dateDebut,desc)")
     @GetMapping
     public Response<ResponseDto> getAll(@RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "10") int size) {
-        return new Response<>(bailService.getAll(page, size, Sort.by(Sort.Order.desc("dateDebut"))));
+                                        @RequestParam(defaultValue = "20") int size,
+                                        @RequestParam(defaultValue = "dateDebut,desc") String sort) {
+        org.springframework.data.domain.Sort sorting;
+        if (sort != null && sort.contains(",")) {
+            String[] parts = sort.split(",");
+            String property = parts[0].trim();
+            org.springframework.data.domain.Sort.Direction direction = "desc".equalsIgnoreCase(parts[1].trim())
+                    ? org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC;
+            sorting = org.springframework.data.domain.Sort.by(direction, property);
+        } else {
+            sorting = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Order.desc("dateDebut"));
+        }
+        return new Response<>(bailService.getAll(page, size, sorting));
     }
 
     @Operation(summary = "Obtenir un bail par ID")

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -25,4 +26,7 @@ public interface BailRepository extends JpaRepository<Bail, Long> {
     List<Bail> findConflictingBails(@Param("appartementId") Long appartementId,
                                     @Param("dateDebut") Date dateDebut,
                                     @Param("dateFin") Date dateFin);
+
+    @Query("SELECT COUNT(b) FROM Bail b JOIN b.appartement a WHERE a.immeuble.id = :immeubleId AND b.dateDebut <= :maintenant AND (b.dateFin IS NULL OR b.dateFin >= :maintenant)")
+    long countBauxEnCoursParImmeuble(@Param("immeubleId") Long immeubleId, @Param("maintenant") LocalDateTime maintenant);
 }

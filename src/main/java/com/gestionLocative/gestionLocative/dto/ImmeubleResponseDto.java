@@ -15,4 +15,5 @@ public class ImmeubleResponseDto implements ResponseDto {
     private Long proprietaireId;
     private ProprietaireResponseDto proprietaire;
     private long nbAppartements;
+    private long nbBauxEnCours;
 }

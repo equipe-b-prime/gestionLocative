@@ -7,6 +7,7 @@ import com.gestionLocative.gestionLocative.service.ProprietaireService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Gestion des Propriétaires", description = "API de gestion des propriétaires")
@@ -49,5 +50,11 @@ public class ProprietaireController {
     @DeleteMapping("/{id}")
     public Response<ResponseDto> delete(@PathVariable Long id) {
         return new Response<>(proprietaireService.delete(id));
+    }
+
+    @Operation(summary = "Lister les immeubles d'un propriétaire")
+    @GetMapping("/{id}/immeubles")
+    public Response<ResponseDto> getImmeublesByProprietaire(@PathVariable Long id) {
+        return new Response<>(proprietaireService.getImmeublesByProprietaire(id));
     }
 }

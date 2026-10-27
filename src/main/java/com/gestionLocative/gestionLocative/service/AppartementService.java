@@ -11,10 +11,15 @@ import com.gestionLocative.gestionLocative.repository.AppartementRepository;
 import com.gestionLocative.gestionLocative.repository.BailRepository;
 import com.gestionLocative.gestionLocative.repository.ImmeubleRepository;
 import com.gestionLocative.gestionLocative.repository.ProprietaireRepository;
+import java.math.BigDecimal;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -107,6 +112,20 @@ public class AppartementService extends AbstractCrudService {
         return getAll(page, taille, Sort.by("etage", "surface"));
     }
 
+    public Page<ResponseDto> findBySearchCriteria(int page, int taille, Double surfaceMin, Double surfaceMax, Integer pieces) {
+        Pageable pageable = PageRequest.of(pageAutorisee(page), tailleAutorisee(taille), Sort.by("etage", "surface"));
+        List<Appartement> all = appartementRepository.findAll();
+        List<Appartement> filtered = all.stream()
+                .filter(a -> surfaceMin == null || (a.getSurface() != null && a.getSurface().compareTo(BigDecimal.valueOf(surfaceMin)) >= 0))
+                .filter(a -> surfaceMax == null || (a.getSurface() != null && a.getSurface().compareTo(BigDecimal.valueOf(surfaceMax)) <= 0))
+                .filter(a -> pieces == null || a.getNbPieces() == pieces)
+                .collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<ResponseDto> dtoList = filtered.subList(start, end).stream().map(this::toDto).collect(Collectors.toList());
+        return new PageImpl<>(dtoList, pageable, filtered.size());
+    }
+
     @Override
     public ResponseDto create(RequestDto request) {
         AppartementRequestDto dto = (AppartementRequestDto) request;
@@ -162,6 +181,31 @@ public class AppartementService extends AbstractCrudService {
                     dto.setEtageOccupe(occupe);
                     return dto;
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<ResponseDto> getBauxByAppartement(Long id) {
+        Appartement appartement = appartementRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Appartement non trouvé"));
+        Date maintenant = new Date();
+        return bailRepository.findByAppartementIdOrderByDateDebutDesc(id).stream()
+                .map(bail -> BailResponseDto.builder()
+                        .id(bail.getId())
+                        .dateDebut(bail.getDateDebut())
+                        .dateFin(bail.getDateFin())
+                        .montantLoyer(bail.getMontantLoyer())
+                        .provisionCharges(bail.getProvisionCharges())
+                        .depotGarantie(bail.getDepotGarantie())
+                        .enCours(bail.getDateDebut() != null && !bail.getDateDebut().after(maintenant)
+                                && (bail.getDateFin() == null || !bail.getDateFin().before(maintenant)))
+                        .locataire(LocataireResponseDto.builder()
+                                .id(bail.getLocataire().getId())
+                                .nom(bail.getLocataire().getNom())
+                                .prenom(bail.getLocataire().getPrenom())
+                                .numero(bail.getLocataire().getNumero())
+                                .email(bail.getLocataire().getEmail())
+                                .build())
+                        .build())
                 .collect(Collectors.toList());
     }
 }
