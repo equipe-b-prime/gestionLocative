@@ -22,4 +22,6 @@ public class Immeuble {
     private String adresse;
     @Column(name = "nb_etages")
     private Integer nbEtages;
+    @Column(name = "proprietaire_id")
+    private Long proprietaireId;
 }

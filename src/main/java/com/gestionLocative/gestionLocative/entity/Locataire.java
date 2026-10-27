@@ -22,5 +22,6 @@ public class Locataire {
     private String prenom;
     @Column(nullable = false)
     private String numero;
+    @Column(nullable = false, unique = true)
     private String email;
 }

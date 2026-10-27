@@ -22,5 +22,7 @@ public class Proprietaire {
     private String prenom;
     @Column(nullable = false)
     private String numero;
+    @Column(unique = true)
+    private String email;
     private String adresse;
 }

@@ -2,31 +2,27 @@ package com.gestionLocative.gestionLocative.repository;
 
 import com.gestionLocative.gestionLocative.entity.Bail;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
-/**
- * Repository JPA pour l'accès aux données des baux.
- * Fournit les opérations CRUD standard sur la table "bail"
- * ainsi que des requêtes dérivées.
- */
 @Repository
 public interface BailRepository extends JpaRepository<Bail, Long> {
 
-    /**
-     * Récupère les baux d'un locataire.
-     *
-     * @param locataireId L'identifiant du locataire.
-     * @return List<Bail> Les baux du locataire.
-     */
     List<Bail> findByLocataireId(Long locataireId);
 
-    /**
-     * Récupère les baux d'un appartement.
-     *
-     * @param appartementId L'identifiant de l'appartement.
-     * @return List<Bail> Les baux de l'appartement.
-     */
     List<Bail> findByAppartementId(Long appartementId);
+
+    List<Bail> findByAppartementIdOrderByDateDebutDesc(Long appartementId);
+
+    boolean existsByAppartementId(Long appartementId);
+
+    @Query("SELECT b FROM Bail b WHERE b.appartement.id = :appartementId " +
+           "AND ((b.dateDebut < :dateFin) AND (b.dateFin IS NULL OR b.dateFin > :dateDebut))")
+    List<Bail> findConflictingBails(@Param("appartementId") Long appartementId,
+                                    @Param("dateDebut") Date dateDebut,
+                                    @Param("dateFin") Date dateFin);
 }

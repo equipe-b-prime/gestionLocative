@@ -1,84 +1,54 @@
 package com.gestionLocative.gestionLocative.controller;
 
 import com.gestionLocative.gestionLocative.dto.BailRequestDto;
+import com.gestionLocative.gestionLocative.dto.Response;
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import com.gestionLocative.gestionLocative.service.BailService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-/**
- * Contrôleur REST pour la gestion des baux.
- */
+@Tag(name = "Gestion des Baux", description = "API de gestion des baux")
 @RestController
 @RequestMapping("/baux")
 public class BailController {
 
     private final BailService bailService;
 
-    /**
-     * Constructeur injectant le service des baux.
-     *
-     * @param bailService le service des baux
-     */
     public BailController(BailService bailService) {
         this.bailService = bailService;
     }
 
-    /**
-     * Récupère la liste de tous les baux.
-     *
-     * @return la liste des baux
-     */
+    @Operation(summary = "Lister les baux", description = "Retourne la liste paginée des baux triée par date de début décroissante")
     @GetMapping
-    public List<ResponseDto> getAll() {
-        return bailService.getAll();
+    public Response<ResponseDto> getAll(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "10") int size) {
+        return new Response<>(bailService.getAll(page, size, Sort.by(Sort.Order.desc("dateDebut"))));
     }
 
-    /**
-     * Récupère le bail à partir de son identifiant.
-     *
-     * @param id l'identifiant du bail
-     * @return le bail trouvé
-     * @throws Throwable si le bail n'est pas trouvé
-     */
+    @Operation(summary = "Obtenir un bail par ID")
     @GetMapping("/{id}")
-    public ResponseDto getById(@PathVariable Long id) throws Throwable {
-        return bailService.getById(id);
+    public Response<ResponseDto> getById(@PathVariable Long id) {
+        return new Response<>(bailService.getById(id));
     }
 
-    /**
-     * Crée un bail.
-     *
-     * @param bailRequest les données de la requête
-     * @return le bail créé
-     */
+    @Operation(summary = "Créer un bail")
     @PostMapping
-    public ResponseDto create(@RequestBody BailRequestDto bailRequest) {
-        return bailService.create(bailRequest);
+    public Response<ResponseDto> create(@Valid @RequestBody BailRequestDto request) {
+        return new Response<>(bailService.create(request));
     }
 
-    /**
-     * Modifie le bail.
-     *
-     * @param id l'identifiant du bail à modifier
-     * @param bailRequest les données de la requête
-     * @return le bail modifié
-     */
+    @Operation(summary = "Modifier un bail")
     @PutMapping("/{id}")
-    public ResponseDto update(@PathVariable Long id, @RequestBody BailRequestDto bailRequest) {
-        return bailService.update(id, bailRequest);
+    public Response<ResponseDto> update(@PathVariable Long id, @Valid @RequestBody BailRequestDto request) {
+        return new Response<>(bailService.update(id, request));
     }
 
-    /**
-     * Supprime le bail à partir de son identifiant.
-     *
-     * @param id l'identifiant du bail
-     * @return le bail supprimé
-     * @throws Throwable si le bail n'est pas trouvé
-     */
+    @Operation(summary = "Supprimer un bail")
     @DeleteMapping("/{id}")
-    public ResponseDto delete(@PathVariable Long id) throws Throwable {
-        return bailService.delete(id);
+    public Response<ResponseDto> delete(@PathVariable Long id) {
+        return new Response<>(bailService.delete(id));
     }
 }

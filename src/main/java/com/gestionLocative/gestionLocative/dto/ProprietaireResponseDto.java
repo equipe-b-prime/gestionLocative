@@ -2,9 +2,6 @@ package com.gestionLocative.gestionLocative.dto;
 
 import lombok.*;
 
-/**
- * Réponse contenant les données d'un propriétaire.
- */
 @Getter
 @Setter
 @Builder
@@ -15,5 +12,6 @@ public class ProprietaireResponseDto implements ResponseDto {
     private String nom;
     private String prenom;
     private String numero;
+    private String email;
     private String adresse;
 }

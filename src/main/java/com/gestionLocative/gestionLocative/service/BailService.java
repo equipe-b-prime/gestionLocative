@@ -1,82 +1,77 @@
 package com.gestionLocative.gestionLocative.service;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-import com.gestionLocative.gestionLocative.repository.AppartementRepository;
-import com.gestionLocative.gestionLocative.dto.AppartementResponseDto;
-import com.gestionLocative.gestionLocative.dto.BailRequestDto;
-import com.gestionLocative.gestionLocative.dto.BailResponseDto;
-import com.gestionLocative.gestionLocative.entity.Appartement;
-import com.gestionLocative.gestionLocative.entity.Bail;
-import com.gestionLocative.gestionLocative.entity.Locataire;
-import com.gestionLocative.gestionLocative.dto.ImmeubleResponseDto;
-import com.gestionLocative.gestionLocative.repository.LocataireRepository;
-import com.gestionLocative.gestionLocative.dto.LocataireResponseDto;
-import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
-import com.gestionLocative.gestionLocative.dto.RequestDto;
-import com.gestionLocative.gestionLocative.dto.ResponseDto;
+import com.gestionLocative.gestionLocative.dto.*;
+import com.gestionLocative.gestionLocative.entity.*;
+import com.gestionLocative.gestionLocative.exception.NotFoundException;
+import com.gestionLocative.gestionLocative.exception.RequeteInvalideException;
+import com.gestionLocative.gestionLocative.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.gestionLocative.gestionLocative.repository.BailRepository;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * Service métier gérant les baux.
- * Fournit la création, la modification, la suppression et les conversions entité/DTO,
- * avec résolution des relations appartement et locataire par identifiant.
- */
 @Service
 public class BailService extends AbstractCrudService {
 
     private final BailRepository bailRepository;
     private final AppartementRepository appartementRepository;
     private final LocataireRepository locataireRepository;
+    private final ProprietaireRepository proprietaireRepository;
+    private final ImmeubleRepository immeubleRepository;
 
-    /**
-     * Constructeur injectant les repositories du bail, de l'appartement et du locataire.
-     *
-     * @param bailRepository le repository des baux
-     * @param appartementRepository le repository des appartements
-     * @param locataireRepository le repository des locataires
-     */
     public BailService(BailRepository bailRepository,
                        AppartementRepository appartementRepository,
-                       LocataireRepository locataireRepository) {
+                       LocataireRepository locataireRepository,
+                       ProprietaireRepository proprietaireRepository,
+                       ImmeubleRepository immeubleRepository) {
         super(bailRepository);
         this.bailRepository = bailRepository;
         this.appartementRepository = appartementRepository;
         this.locataireRepository = locataireRepository;
+        this.proprietaireRepository = proprietaireRepository;
+        this.immeubleRepository = immeubleRepository;
     }
 
-    /**
-     * Convertit une requête de bail en entité.
-     *
-     * @param bailRequest La requête du bail.
-     * @param appartement L'appartement associé.
-     * @param locataire Le locataire associé.
-     * @return L'entité Bail construite.
-     */
-    public Bail toEntity(BailRequestDto bailRequest, Appartement appartement, Locataire locataire) {
-        return Bail.builder()
-                .dateDebut(bailRequest.getDateDebut())
-                .dateFin(bailRequest.getDateFin())
-                .montantLoyer(bailRequest.getMontantLoyer())
-                .provisionCharges(bailRequest.getProvisionCharges())
-                .depotGarantie(bailRequest.getDepotGarantie())
-                .appartement(appartement)
-                .locataire(locataire)
+    private ProprietaireResponseDto toProprietaireDto(Proprietaire p) {
+        if (p == null) return null;
+        return ProprietaireResponseDto.builder()
+                .id(p.getId()).nom(p.getNom()).prenom(p.getPrenom())
+                .numero(p.getNumero()).email(p.getEmail()).build();
+    }
+
+    private ImmeubleResponseDto toImmeubleDto(Immeuble i) {
+        Proprietaire pi = i.getProprietaireId() != null
+                ? proprietaireRepository.findById(i.getProprietaireId()).orElse(null) : null;
+        return ImmeubleResponseDto.builder()
+                .id(i.getId()).nom(i.getNom()).adresse(i.getAdresse())
+                .nbEtages(i.getNbEtages()).proprietaireId(i.getProprietaireId())
+                .proprietaire(toProprietaireDto(pi))
+                .nbAppartements(appartementRepository.countByImmeubleId(i.getId()))
                 .build();
     }
 
-    /**
-     * Convertit une entité Bail en réponse DTO.
-     *
-     * @param bail L'entité du bail.
-     * @return La réponse DTO du bail, avec appartement et locataire imbriqués.
-     */
+    private AppartementResponseDto toAppartementDto(Appartement a) {
+        Proprietaire p = a.getProprietaire();
+        return AppartementResponseDto.builder()
+                .id(a.getId()).nom(a.getNom()).surface(a.getSurface())
+                .nbPieces(a.getNbPieces()).etage(a.getEtage())
+                .proprietaire(toProprietaireDto(p))
+                .immeuble(toImmeubleDto(a.getImmeuble()))
+                .build();
+    }
+
     @Override
     public ResponseDto toDto(Object entity) {
         Bail bail = (Bail) entity;
+        Date maintenant = new Date();
+        boolean enCours = bail.getDateDebut() != null && !bail.getDateDebut().after(maintenant)
+                && (bail.getDateFin() == null || !bail.getDateFin().before(maintenant));
+        Locataire l = bail.getLocataire();
         return BailResponseDto.builder()
                 .id(bail.getId())
                 .dateDebut(bail.getDateDebut())
@@ -84,87 +79,75 @@ public class BailService extends AbstractCrudService {
                 .montantLoyer(bail.getMontantLoyer())
                 .provisionCharges(bail.getProvisionCharges())
                 .depotGarantie(bail.getDepotGarantie())
-
-                .appartement(AppartementResponseDto.builder()
-                        .id(bail.getAppartement().getId())
-                        .nom(bail.getAppartement().getNom())
-                        .surface(bail.getAppartement().getSurface())
-                        .nbPieces(bail.getAppartement().getNbPieces())
-                        .etage(bail.getAppartement().getEtage())
-
-                        .proprietaire(ProprietaireResponseDto.builder()
-                                .id(bail.getAppartement().getProprietaire().getId())
-                                .nom(bail.getAppartement().getProprietaire().getNom())
-                                .prenom(bail.getAppartement().getProprietaire().getPrenom())
-                                .numero(bail.getAppartement().getProprietaire().getNumero())
-                                .adresse(bail.getAppartement().getProprietaire().getAdresse())
-                                .build())
-
-                        .immeuble(ImmeubleResponseDto.builder()
-                                .id(bail.getAppartement().getImmeuble().getId())
-                                .nom(bail.getAppartement().getImmeuble().getNom())
-                                .adresse(bail.getAppartement().getImmeuble().getAdresse())
-                                .nbEtages(bail.getAppartement().getImmeuble().getNbEtages())
-                                .build())
-
-                        .build())
-
+                .enCours(enCours)
+                .appartement(toAppartementDto(bail.getAppartement()))
                 .locataire(LocataireResponseDto.builder()
-                        .id(bail.getLocataire().getId())
-                        .nom(bail.getLocataire().getNom())
-                        .prenom(bail.getLocataire().getPrenom())
-                        .numero(bail.getLocataire().getNumero())
-                        .email(bail.getLocataire().getEmail())
-                        .build())
-
+                        .id(l.getId()).nom(l.getNom()).prenom(l.getPrenom())
+                        .numero(l.getNumero()).email(l.getEmail()).build())
                 .build();
     }
 
-
-
-
-    /**
-     * Met à jour un bail existant à partir du contenu de la requête.
-     *
-     * @param id L'identifiant du bail à mettre à jour.
-     * @param bailRequest La requête contenant les nouvelles données et les identifiants des relations.
-     * @return Le bail mis à jour, converti en DTO.
-     * @throws RuntimeException Si le bail, l'appartement ou le locataire n'existe pas.
-     */
     @Override
-    public ResponseDto update(Long id, RequestDto request) {
-        BailRequestDto bailRequest = (BailRequestDto) request;
-        Appartement appartement = appartementRepository.findById(bailRequest.getAppartementId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appartement non trouvé"));
-        Locataire locataire = locataireRepository.findById(bailRequest.getLocataireId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Locataire non trouvé"));
-        Bail bail = bailRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bail non trouvé"));
-        bail.setDateDebut(bailRequest.getDateDebut());
-        bail.setDateFin(bailRequest.getDateFin());
-        bail.setMontantLoyer(bailRequest.getMontantLoyer());
-        bail.setProvisionCharges(bailRequest.getProvisionCharges());
-        bail.setDepotGarantie(bailRequest.getDepotGarantie());
-        bail.setAppartement(appartement);
-        bail.setLocataire(locataire);
+    public ResponseDto create(RequestDto request) {
+        BailRequestDto dto = (BailRequestDto) request;
+        if (dto.getDateFin() != null && !dto.getDateFin().after(dto.getDateDebut())) {
+            throw new IllegalArgumentException("La date de fin doit être postérieure à la date de début.");
+        }
+        long jours = (dto.getDateFin() != null)
+                ? (dto.getDateFin().getTime() - dto.getDateDebut().getTime()) / (1000L * 60 * 60 * 24)
+                : 0;
+        if (dto.getDateFin() != null && jours < 30) {
+            throw new RequeteInvalideException("La durée minimum d'un bail est d'un mois.");
+        }
+        Appartement appartement = appartementRepository.findById(dto.getAppartementId())
+                .orElseThrow(() -> new NotFoundException("Appartement non trouvé"));
+        Locataire locataire = locataireRepository.findById(dto.getLocataireId())
+                .orElseThrow(() -> new NotFoundException("Locataire non trouvé"));
+
+        List<Bail> conflits = bailRepository.findConflictingBails(
+                dto.getAppartementId(), dto.getDateDebut(),
+                dto.getDateFin() != null ? dto.getDateFin() : new Date(System.currentTimeMillis() + 365L * 24 * 3600 * 1000));
+        if (!conflits.isEmpty()) {
+            throw new IllegalArgumentException("L'appartement est déjà occupé sur la période demandée.");
+        }
+
+        Bail bail = Bail.builder()
+                .dateDebut(dto.getDateDebut())
+                .dateFin(dto.getDateFin())
+                .montantLoyer(dto.getMontantLoyer())
+                .provisionCharges(dto.getProvisionCharges())
+                .depotGarantie(dto.getDepotGarantie())
+                .appartement(appartement)
+                .locataire(locataire)
+                .build();
         return toDto(bailRepository.save(bail));
     }
 
-    /**
-     * Crée un nouveau bail.
-     *
-     * @param bailRequest La requête contenant les données et les identifiants des relations.
-     * @return Le bail créé, converti en DTO.
-     * @throws RuntimeException Si l'appartement ou le locataire n'existe pas.
-     */
     @Override
-    public ResponseDto create(RequestDto request) {
-        BailRequestDto bailRequest = (BailRequestDto) request;
-        Appartement appartement = appartementRepository.findById(bailRequest.getAppartementId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appartement non trouvé"));
-        Locataire locataire = locataireRepository.findById(bailRequest.getLocataireId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Locataire non trouvé"));
-        Bail bail = toEntity(bailRequest, appartement, locataire);
+    public ResponseDto update(Long id, RequestDto request) {
+        BailRequestDto dto = (BailRequestDto) request;
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
+        if (dto.getDateFin() != null && !dto.getDateFin().after(bail.getDateDebut())) {
+            throw new IllegalArgumentException("La date de fin doit être postérieure à la date de début.");
+        }
+        boolean nonCommence = bail.getDateDebut() != null && bail.getDateDebut().after(new Date());
+        if (nonCommence) {
+            bail.setMontantLoyer(dto.getMontantLoyer());
+        }
+        bail.setDateFin(dto.getDateFin());
         return toDto(bailRepository.save(bail));
+    }
+
+    @Override
+    public ResponseDto delete(Long id) {
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_MESSAGE));
+        boolean nonCommence = bail.getDateDebut() != null && bail.getDateDebut().after(new Date());
+        if (!nonCommence) {
+            throw new IllegalArgumentException("Un bail en cours ne peut pas être supprimé, il doit être résilié.");
+        }
+        bailRepository.deleteById(id);
+        return toDto(bail);
     }
 }

@@ -2,9 +2,6 @@ package com.gestionLocative.gestionLocative.dto;
 
 import lombok.*;
 
-/**
- * Réponse contenant les données d'un immeuble.
- */
 @Getter
 @Setter
 @Builder
@@ -15,4 +12,7 @@ public class ImmeubleResponseDto implements ResponseDto {
     private String nom;
     private String adresse;
     private Integer nbEtages;
+    private Long proprietaireId;
+    private ProprietaireResponseDto proprietaire;
+    private long nbAppartements;
 }

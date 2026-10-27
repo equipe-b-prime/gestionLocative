@@ -1,84 +1,53 @@
 package com.gestionLocative.gestionLocative.controller;
 
 import com.gestionLocative.gestionLocative.dto.LocataireRequestDto;
+import com.gestionLocative.gestionLocative.dto.Response;
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import com.gestionLocative.gestionLocative.service.LocataireService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-/**
- * Contrôleur REST pour la gestion des locataires.
- */
+@Tag(name = "Gestion des Locataires", description = "API de gestion des locataires")
 @RestController
 @RequestMapping("/locataires")
 public class LocataireController {
 
     private final LocataireService locataireService;
 
-    /**
-     * Constructeur injectant le service des locataires.
-     *
-     * @param locataireService le service des locataires
-     */
     public LocataireController(LocataireService locataireService) {
         this.locataireService = locataireService;
     }
 
-    /**
-     * Récupère la liste de tous les locataires.
-     *
-     * @return la liste des locataires
-     */
+    @Operation(summary = "Lister les locataires", description = "Retourne la liste paginée des locataires triée par nom")
     @GetMapping
-    public List<ResponseDto> getAll() {
-        return locataireService.getAll();
+    public Response<ResponseDto> getAll(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "10") int size) {
+        return new Response<>(locataireService.getAll(page, size));
     }
 
-    /**
-     * Récupère le locataire à partir de son identifiant.
-     *
-     * @param id l'identifiant du locataire
-     * @return le locataire trouvé
-     * @throws Throwable si le locataire n'est pas trouvé
-     */
+    @Operation(summary = "Obtenir un locataire par ID")
     @GetMapping("/{id}")
-    public ResponseDto getById(@PathVariable Long id) throws Throwable {
-        return locataireService.getById(id);
+    public Response<ResponseDto> getById(@PathVariable Long id) {
+        return new Response<>(locataireService.getById(id));
     }
 
-    /**
-     * Crée un locataire.
-     *
-     * @param locataireRequest les données de la requête
-     * @return le locataire créé
-     */
+    @Operation(summary = "Créer un locataire")
     @PostMapping
-    public ResponseDto create(@RequestBody LocataireRequestDto locataireRequest) {
-        return locataireService.create(locataireRequest);
+    public Response<ResponseDto> create(@Valid @RequestBody LocataireRequestDto request) {
+        return new Response<>(locataireService.create(request));
     }
 
-    /**
-     * Modifie le locataire.
-     *
-     * @param id l'identifiant du locataire à modifier
-     * @param locataireRequest les données de la requête
-     * @return le locataire modifié
-     */
+    @Operation(summary = "Modifier un locataire")
     @PutMapping("/{id}")
-    public ResponseDto update(@PathVariable Long id, @RequestBody LocataireRequestDto locataireRequest) {
-        return locataireService.update(id, locataireRequest);
+    public Response<ResponseDto> update(@PathVariable Long id, @Valid @RequestBody LocataireRequestDto request) {
+        return new Response<>(locataireService.update(id, request));
     }
 
-    /**
-     * Supprime le locataire à partir de son identifiant.
-     *
-     * @param id l'identifiant du locataire
-     * @return le locataire supprimé
-     * @throws Throwable si le locataire n'est pas trouvé
-     */
+    @Operation(summary = "Supprimer un locataire")
     @DeleteMapping("/{id}")
-    public ResponseDto delete(@PathVariable Long id) throws Throwable {
-        return locataireService.delete(id);
+    public Response<ResponseDto> delete(@PathVariable Long id) {
+        return new Response<>(locataireService.delete(id));
     }
 }
