@@ -2,7 +2,7 @@
 # Test F15 - révision du loyer. Usage: ./test_f15.sh [BASE_URL]
 BASE=${1:-http://localhost:8181}
 H='Content-Type: application/json'
-S=$(date +%s)
+S=$(date +%s)$RANDOM
 id() { python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])"; }
 
 PID=$(curl -s -X POST "$BASE/proprietaires" -H "$H" -d "{\"nom\":\"P$S\",\"prenom\":\"F15\",\"numero\":\"+2246$S\",\"email\":\"p$S@t.ci\"}" | id)

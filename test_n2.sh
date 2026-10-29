@@ -4,6 +4,7 @@
 # Prérequis : application tourne sur http://localhost:9090
 
 BASE="http://localhost:9090"
+U=$(date +%s)$RANDOM
 
 echo "╔══════════════════════════════════════════════╗"
 echo "║   TEST N2-F001 — GESTION LOCATIVE           ║"
@@ -14,23 +15,23 @@ echo ""
 echo "── Création des données de test ──"
 PID=$(curl -s -X POST "$BASE/proprietaires" \
   -H "Content-Type: application/json" \
-  -d '{"nom":"Test","prenom":"N2","numero":"+224600000099","email":"testn2@test.ci"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
+  -d '{"nom":"Test","prenom":"N2","numero":"+22460'"$U"'","email":"testn2_'"$U"'@test.ci"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
 
 IID=$(curl -s -X POST "$BASE/immeubles" \
   -H "Content-Type: application/json" \
-  -d "{\"nom\":\"Immeuble N2\",\"adresse\":\"N2 Adresse\",\"nbEtages\":5,\"proprietaireId\":$PID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
+  -d "{\"nom\":\"Immeuble N2 $U\",\"adresse\":\"N2 Adresse $U\",\"nbEtages\":5,\"proprietaireId\":$PID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
 
 AID1=$(curl -s -X POST "$BASE/appartements" \
   -H "Content-Type: application/json" \
-  -d "{\"nom\":\"Studio N2\",\"surface\":30.0,\"nbPieces\":1,\"etage\":1,\"proprietaireId\":$PID,\"immeubleId\":$IID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
+  -d "{\"nom\":\"Studio N2 $U\",\"surface\":30.0,\"nbPieces\":1,\"etage\":1,\"proprietaireId\":$PID,\"immeubleId\":$IID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
 
 AID2=$(curl -s -X POST "$BASE/appartements" \
   -H "Content-Type: application/json" \
-  -d "{\"nom\":\"F3 N2\",\"surface\":75.0,\"nbPieces\":3,\"etage\":3,\"proprietaireId\":$PID,\"immeubleId\":$IID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
+  -d "{\"nom\":\"F3 N2 $U\",\"surface\":75.0,\"nbPieces\":3,\"etage\":3,\"proprietaireId\":$PID,\"immeubleId\":$IID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
 
 LID=$(curl -s -X POST "$BASE/locataires" \
   -H "Content-Type: application/json" \
-  -d '{"nom":"LocN2","prenom":"Test","numero":"+224600000098","email":"locn2@test.ci"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
+  -d '{"nom":"LocN2","prenom":"Test","numero":"+22461'"$U"'","email":"locn2_'"$U"'@test.ci"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['data'][0]['id'])")
 
 curl -s -X POST "$BASE/baux" \
   -H "Content-Type: application/json" \

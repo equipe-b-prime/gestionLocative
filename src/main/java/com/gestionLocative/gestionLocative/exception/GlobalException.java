@@ -92,4 +92,15 @@ public class GlobalException {
         response.setMessage("Requête invalide");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    /** Violation d'une contrainte d'unicité ou d'intégrité en base : 409 plutôt que 500. */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Response<String>> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
+        Response<String> response = new Response<>(List.of("Une ressource identique existe déjà ou une contrainte d'intégrité est violée."));
+        response.setHasErreur(true);
+        response.setNombreTotalElements(1L);
+        response.setCode(HttpStatus.CONFLICT.value());
+        response.setMessage("Conflit d'intégrité");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 }

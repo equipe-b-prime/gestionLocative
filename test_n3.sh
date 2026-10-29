@@ -2,7 +2,7 @@
 # Niveau 3 - règles métier F11 à F16. Usage: ./test_n3.sh [BASE_URL]
 BASE=${1:-http://localhost:8181}
 H='Content-Type: application/json'
-S=$(date +%s)
+S=$(date +%s)$RANDOM
 PASS=0; FAIL=0
 PSQL="env PGPASSWORD=postgres psql -h localhost -U postgres -d gestion_locative -tA"
 
