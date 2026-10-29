@@ -1,5 +1,6 @@
 package com.gestionLocative.gestionLocative.service;
 
+import com.gestionLocative.gestionLocative.dto.AbstractClean;
 import com.gestionLocative.gestionLocative.dto.*;
 import com.gestionLocative.gestionLocative.entity.Bail;
 import com.gestionLocative.gestionLocative.entity.Locataire;
@@ -57,9 +58,15 @@ public class LocataireService extends AbstractCrudService {
     @Override
     public ResponseDto create(RequestDto request) {
         LocataireRequestDto dto = (LocataireRequestDto) request;
-        if (locataireRepository.existsByEmail(dto.getEmail())) {
-            throw new DoublonRessourceException("Un locataire avec l'email '" + dto.getEmail() + "' existe déjà.");
+        String email = AbstractClean.cleanText(dto.getEmail());
+        if (email != null && !email.isBlank()
+                && locataireRepository.existsByEmail(email)) {
+            throw new DoublonRessourceException("Un locataire avec l'email '" + email + "' existe déjà.");
         }
+        dto.setNom(AbstractClean.cleanText(dto.getNom()));
+        dto.setPrenom(AbstractClean.cleanText(dto.getPrenom()));
+        dto.setNumero(AbstractClean.cleanText(dto.getNumero()));
+        dto.setEmail(email);
         return toDto(locataireRepository.save(toEntity(dto)));
     }
 
@@ -68,9 +75,15 @@ public class LocataireService extends AbstractCrudService {
         LocataireRequestDto dto = (LocataireRequestDto) request;
         Locataire locataire = locataireRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Locataire non trouvé"));
-        if (locataireRepository.existsByEmailAndIdNot(dto.getEmail(), id)) {
-            throw new DoublonRessourceException("Un autre locataire avec l'email '" + dto.getEmail() + "' existe déjà.");
+        String email = AbstractClean.cleanText(dto.getEmail());
+        if (email != null && !email.isBlank()
+                && locataireRepository.existsByEmailAndIdNot(email, id)) {
+            throw new DoublonRessourceException("Un autre locataire avec l'email '" + email + "' existe déjà.");
         }
+        dto.setNom(AbstractClean.cleanText(dto.getNom()));
+        dto.setPrenom(AbstractClean.cleanText(dto.getPrenom()));
+        dto.setNumero(AbstractClean.cleanText(dto.getNumero()));
+        dto.setEmail(email);
         locataire.setNom(dto.getNom());
         locataire.setPrenom(dto.getPrenom());
         locataire.setNumero(dto.getNumero());

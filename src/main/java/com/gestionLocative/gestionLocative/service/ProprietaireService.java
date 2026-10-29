@@ -1,5 +1,6 @@
 package com.gestionLocative.gestionLocative.service;
 
+import com.gestionLocative.gestionLocative.dto.AbstractClean;
 import com.gestionLocative.gestionLocative.dto.ProprietaireRequestDto;
 import com.gestionLocative.gestionLocative.dto.ProprietaireResponseDto;
 import com.gestionLocative.gestionLocative.dto.RequestDto;
@@ -65,10 +66,16 @@ public class ProprietaireService extends AbstractCrudService {
     @Override
     public ResponseDto create(RequestDto request) {
         ProprietaireRequestDto dto = (ProprietaireRequestDto) request;
-        if (dto.getEmail() != null && !dto.getEmail().isBlank()
-                && proprietaireRepository.existsByEmail(dto.getEmail())) {
-            throw new DoublonRessourceException("Un propriétaire avec l'email '" + dto.getEmail() + "' existe déjà.");
+        String email = AbstractClean.cleanText(dto.getEmail());
+        if (email != null && !email.isBlank()
+                && proprietaireRepository.existsByEmail(email)) {
+            throw new DoublonRessourceException("Un propriétaire avec l'email '" + email + "' existe déjà.");
         }
+        dto.setNom(AbstractClean.cleanText(dto.getNom()));
+        dto.setPrenom(AbstractClean.cleanText(dto.getPrenom()));
+        dto.setNumero(AbstractClean.cleanText(dto.getNumero()));
+        dto.setEmail(email);
+        dto.setAdresse(AbstractClean.cleanText(dto.getAdresse()));
         return toDto(proprietaireRepository.save(toEntity(dto)));
     }
 
@@ -77,10 +84,16 @@ public class ProprietaireService extends AbstractCrudService {
         ProprietaireRequestDto dto = (ProprietaireRequestDto) request;
         Proprietaire proprietaire = proprietaireRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_MESSAGE));
-        if (dto.getEmail() != null && !dto.getEmail().isBlank()
-                && proprietaireRepository.existsByEmailAndIdNot(dto.getEmail(), id)) {
-            throw new DoublonRessourceException("Un autre propriétaire avec l'email '" + dto.getEmail() + "' existe déjà.");
+        String email = AbstractClean.cleanText(dto.getEmail());
+        if (email != null && !email.isBlank()
+                && proprietaireRepository.existsByEmailAndIdNot(email, id)) {
+            throw new DoublonRessourceException("Un autre propriétaire avec l'email '" + email + "' existe déjà.");
         }
+        dto.setNom(AbstractClean.cleanText(dto.getNom()));
+        dto.setPrenom(AbstractClean.cleanText(dto.getPrenom()));
+        dto.setNumero(AbstractClean.cleanText(dto.getNumero()));
+        dto.setEmail(email);
+        dto.setAdresse(AbstractClean.cleanText(dto.getAdresse()));
         proprietaire.setNom(dto.getNom());
         proprietaire.setPrenom(dto.getPrenom());
         proprietaire.setNumero(dto.getNumero());

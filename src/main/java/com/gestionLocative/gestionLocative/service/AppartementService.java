@@ -146,6 +146,9 @@ public class AppartementService extends AbstractCrudService {
         Appartement appartement = appartementRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Appartement non trouvé"));
         Immeuble immeuble = appartement.getImmeuble();
+        if (!dto.getImmeubleId().equals(immeuble.getId())) {
+            throw new IllegalArgumentException("L'immeuble d'un appartement est figé et ne peut pas être modifié.");
+        }
         if (dto.getEtage() > immeuble.getNbEtages()) {
             throw new IllegalArgumentException("L'étage (" + dto.getEtage()
                     + ") ne peut pas dépasser le nombre d'étages de l'immeuble (" + immeuble.getNbEtages() + ").");

@@ -1,36 +1,19 @@
 package com.gestionLocative.gestionLocative.exception;
 
+import com.gestionLocative.gestionLocative.dto.AbstractClean;
 import com.gestionLocative.gestionLocative.dto.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.*;
 
 @RestControllerAdvice
 public class GlobalException {
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Response<Map<String, String>>> handleValidationExceptions(
-            MethodArgumentNotValidException ex) {
-        List<Map<String, String>> erreurs = new ArrayList<>();
-        for (FieldError error : ex.getFieldErrors()) {
-            Map<String, String> detail = new HashMap<>();
-            detail.put("champ", error.getField());
-            detail.put("message", error.getDefaultMessage());
-            erreurs.add(detail);
-        }
-        Response<Map<String, String>> response = new Response<>(erreurs);
-        response.setHasErreur(true);
-        response.setNombreTotalElements((long) erreurs.size());
-        response.setCode(HttpStatus.BAD_REQUEST.value());
-        response.setMessage("Erreur de validation");
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Response<String>> handleNotFoundException(NotFoundException ex) {
