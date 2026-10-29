@@ -18,6 +18,7 @@ public class BailResponseDto implements ResponseDto {
     private BigDecimal provisionCharges;
     private BigDecimal depotGarantie;
     private boolean enCours;
+    private String statut;
     private AppartementResponseDto appartement;
     private LocataireResponseDto locataire;
 }

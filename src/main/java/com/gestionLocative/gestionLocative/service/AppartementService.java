@@ -114,16 +114,10 @@ public class AppartementService extends AbstractCrudService {
 
     public Page<ResponseDto> findBySearchCriteria(int page, int taille, Double surfaceMin, Double surfaceMax, Integer pieces) {
         Pageable pageable = PageRequest.of(pageAutorisee(page), tailleAutorisee(taille), Sort.by("etage", "surface"));
-        List<Appartement> all = appartementRepository.findAll();
-        List<Appartement> filtered = all.stream()
-                .filter(a -> surfaceMin == null || (a.getSurface() != null && a.getSurface().compareTo(BigDecimal.valueOf(surfaceMin)) >= 0))
-                .filter(a -> surfaceMax == null || (a.getSurface() != null && a.getSurface().compareTo(BigDecimal.valueOf(surfaceMax)) <= 0))
-                .filter(a -> pieces == null || a.getNbPieces() == pieces)
-                .collect(Collectors.toList());
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), filtered.size());
-        List<ResponseDto> dtoList = filtered.subList(start, end).stream().map(this::toDto).collect(Collectors.toList());
-        return new PageImpl<>(dtoList, pageable, filtered.size());
+        return appartementRepository.rechercher(
+                surfaceMin == null ? null : BigDecimal.valueOf(surfaceMin),
+                surfaceMax == null ? null : BigDecimal.valueOf(surfaceMax),
+                pieces, pageable).map(this::toDto);
     }
 
     @Override
@@ -175,7 +169,7 @@ public class AppartementService extends AbstractCrudService {
         Immeuble immeuble = immeubleRepository.findById(immeubleId)
                 .orElseThrow(() -> new NotFoundException("Immeuble non trouvé"));
         Date maintenant = new Date();
-        return appartementRepository.findByImmeubleId(immeubleId).stream()
+        return appartementRepository.findByImmeubleIdOrderByEtageAscSurfaceAsc(immeubleId).stream()
                 .map(a -> {
                     AppartementResponseDto dto = (AppartementResponseDto) toDto(a);
                     boolean occupe = bailRepository.findByAppartementId(a.getId()).stream()

@@ -81,4 +81,11 @@ public class BailController {
         java.math.BigDecimal nouveauMontant = new java.math.BigDecimal(String.valueOf(body.get("nouveauMontant")));
         return new Response<>(bailService.revision(id, nouveauMontant, (String) body.get("dateEffet")));
     }
+
+    @Operation(summary = "F16 - Déclencher manuellement la clôture des baux arrivés à terme",
+            description = "Même traitement que la tâche planifiée de minuit ; renvoie le nombre de baux clôturés")
+    @PostMapping("/cloture")
+    public java.util.Map<String, Integer> cloturer() {
+        return java.util.Map.of("bauxClotures", bailService.cloturerBauxTermines());
+    }
 }

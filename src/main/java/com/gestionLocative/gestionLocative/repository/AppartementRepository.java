@@ -15,6 +15,19 @@ public interface AppartementRepository extends JpaRepository<Appartement, Long> 
 
     List<Appartement> findByImmeubleId(Long immeubleId);
 
+    /** F6 : appartements d'un immeuble triés par étage croissant. */
+    List<Appartement> findByImmeubleIdOrderByEtageAscSurfaceAsc(Long immeubleId);
+
+    /** F9 : recherche multicritères (critères optionnels, filtrage et pagination en base). */
+    @Query("SELECT a FROM Appartement a WHERE (:surfaceMin IS NULL OR a.surface >= :surfaceMin) "
+         + "AND (:surfaceMax IS NULL OR a.surface <= :surfaceMax) "
+         + "AND (:pieces IS NULL OR a.nbPieces = :pieces)")
+    org.springframework.data.domain.Page<Appartement> rechercher(
+            @Param("surfaceMin") java.math.BigDecimal surfaceMin,
+            @Param("surfaceMax") java.math.BigDecimal surfaceMax,
+            @Param("pieces") Integer pieces,
+            org.springframework.data.domain.Pageable pageable);
+
     @Query("SELECT DISTINCT a.proprietaire FROM Appartement a WHERE a.immeuble.id = :immeubleId")
     List<Proprietaire> findProprietairesByImmeubleId(@Param("immeubleId") Long immeubleId);
 
