@@ -12,6 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -126,5 +129,56 @@ public class BailService extends AbstractCrudService {
         }
         bailRepository.deleteById(id);
         return toDto(bail);
+    }
+
+    private Date parseDate(String dateStr) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+            return sdf.parse(dateStr);
+        } catch (ParseException e) {
+            throw new RequeteInvalideException("Format de date invalide. Utilisez yyyy-MM-dd.");
+        }
+    }
+
+    /**
+     * F13 - Résiliation anticipée : ramène la date de fin du bail à la date d'effet fournie.
+     */
+    public ResponseDto resiliation(Long id, String dateEffetStr) {
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
+        Date dateEffet = parseDate(dateEffetStr);
+        if (dateEffet.before(bail.getDateDebut())) {
+            throw new RequeteInvalideException("La date d'effet de résiliation ne peut pas être antérieure au début du bail.");
+        }
+        bail.setDateFin(dateEffet);
+        return toDto(bailRepository.save(bail));
+    }
+
+    /**
+     * F14 - Renouvellement : prolonge la date de fin du bail.
+     */
+    public ResponseDto renouvellement(Long id, String nouvelleDateFinStr) {
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
+        Date nouvelleDateFin = parseDate(nouvelleDateFinStr);
+        if (bail.getDateFin() != null && nouvelleDateFin.before(bail.getDateFin())) {
+            throw new RequeteInvalideException("La nouvelle date de fin doit être postérieure à l'actuelle.");
+        }
+        bail.setDateFin(nouvelleDateFin);
+        return toDto(bailRepository.save(bail));
+    }
+
+    /**
+     * F15 - Révision du loyer.
+     */
+    public ResponseDto revision(Long id, BigDecimal nouveauMontant, String dateEffetStr) {
+        Bail bail = bailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bail non trouvé"));
+        if (nouveauMontant == null || nouveauMontant.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RequeteInvalideException("Le nouveau montant doit être supérieur à 0.");
+        }
+        bail.setMontantLoyer(nouveauMontant);
+        return toDto(bailRepository.save(bail));
     }
 }

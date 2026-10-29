@@ -62,4 +62,23 @@ public class BailController {
     public Response<ResponseDto> delete(@PathVariable Long id) {
         return new Response<>(bailService.delete(id));
     }
+
+    @Operation(summary = "F13 - Résilier un bail par anticipation", description = "Ramène la date de fin du bail à la date d'effet fournie")
+    @PostMapping("/{id}/resiliation")
+    public Response<ResponseDto> resiliation(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        return new Response<>(bailService.resiliation(id, body.get("dateEffet")));
+    }
+
+    @Operation(summary = "F14 - Renouveler un bail", description = "Prolonge la date de fin du bail")
+    @PostMapping("/{id}/renouvellement")
+    public Response<ResponseDto> renouvellement(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        return new Response<>(bailService.renouvellement(id, body.get("nouvelleDateFin")));
+    }
+
+    @Operation(summary = "F15 - Réviser le loyer d'un bail", description = "Change le loyer en conservant l'historique")
+    @PostMapping("/{id}/revision")
+    public Response<ResponseDto> revision(@PathVariable Long id, @RequestBody java.util.Map<String, Object> body) {
+        java.math.BigDecimal nouveauMontant = new java.math.BigDecimal(String.valueOf(body.get("nouveauMontant")));
+        return new Response<>(bailService.revision(id, nouveauMontant, (String) body.get("dateEffet")));
+    }
 }
