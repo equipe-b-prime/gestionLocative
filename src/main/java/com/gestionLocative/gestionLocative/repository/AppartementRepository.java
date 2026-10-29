@@ -36,4 +36,10 @@ public interface AppartementRepository extends JpaRepository<Appartement, Long> 
     boolean existsByImmeubleId(Long immeubleId);
 
     Optional<Appartement> findFirstByImmeubleId(Long immeubleId);
+
+    /** F17 : appartements qu'aucun bail ne couvre à la date donnée (dateFin exclue, comme pour le chevauchement). */
+    @Query("SELECT a FROM Appartement a WHERE NOT EXISTS (SELECT b.id FROM Bail b WHERE b.appartement = a "
+         + "AND b.dateDebut <= :date AND (b.dateFin IS NULL OR b.dateFin > :date)) "
+         + "ORDER BY a.immeuble.id, a.etage, a.surface")
+    List<Appartement> findLibres(@Param("date") java.util.Date date);
 }

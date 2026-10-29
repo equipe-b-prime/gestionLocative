@@ -18,6 +18,7 @@ public interface BailRepository extends JpaRepository<Bail, Long> {
     List<Bail> findByAppartementId(Long appartementId);
 
     List<Bail> findByAppartementIdOrderByDateDebutDesc(Long appartementId);
+    List<Bail> findByAppartementIdOrderByDateDebutAsc(Long appartementId);
 
     boolean existsByAppartementId(Long appartementId);
 

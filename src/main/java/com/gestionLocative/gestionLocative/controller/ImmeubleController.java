@@ -4,6 +4,7 @@ import com.gestionLocative.gestionLocative.dto.ImmeubleRequestDto;
 import com.gestionLocative.gestionLocative.dto.Response;
 import com.gestionLocative.gestionLocative.dto.ResponseDto;
 import com.gestionLocative.gestionLocative.service.ImmeubleService;
+import com.gestionLocative.gestionLocative.service.OccupationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class ImmeubleController {
 
     private final ImmeubleService immeubleService;
+    private final OccupationService occupationService;
 
-    public ImmeubleController(ImmeubleService immeubleService) {
+    public ImmeubleController(ImmeubleService immeubleService, OccupationService occupationService) {
         this.immeubleService = immeubleService;
+        this.occupationService = occupationService;
     }
 
     @Operation(summary = "Lister les immeubles", description = "Retourne la liste paginée des immeubles triée par adresse")
@@ -55,5 +58,12 @@ public class ImmeubleController {
     @GetMapping("/{id}/appartements")
     public Response<ResponseDto> getAppartements(@PathVariable Long id) {
         return new Response<>((java.util.List) immeubleService.getAppartementsByImmeuble(id));
+    }
+
+    @Operation(summary = "F19 - Calculer le revenu locatif d'un immeuble sur un mois",
+            description = "Loyers des baux actifs au prorata des jours, détail par appartement et taux d'occupation (mois au format yyyy-MM)")
+    @GetMapping("/{id}/revenu")
+    public Response<ResponseDto> revenu(@PathVariable Long id, @RequestParam String mois) {
+        return new Response<>(occupationService.revenu(id, mois));
     }
 }

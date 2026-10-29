@@ -1,6 +1,5 @@
 package com.gestionLocative.gestionLocative.dto;
 
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
@@ -15,7 +14,6 @@ import java.util.Date;
 @NoArgsConstructor
 public class BailRequestDto implements RequestDto {
     @NotNull(message = "La date de début est obligatoire")
-    @FutureOrPresent(message = "La date de début ne peut pas être dans le passé")
     private Date dateDebut;
     private Date dateFin;
     @NotNull(message = "Le montant du loyer est obligatoire")
