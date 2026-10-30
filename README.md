@@ -20,18 +20,18 @@ L'API est accessible et testable aussi bien en ligne qu'en environnement local :
 
 ---
 
-## 📦 Pièce Jointe : Collection Postman Prête à l'Emploi
+## 📦 Pièce Jointe : Collection Postman Prête à l'Emploi (`postman.json`)
 
 Une collection Postman complète et immédiatement importable est fournie à la racine du dépôt :
 
-📄 **[`ZKANTAPI.postman_collection.json`](./ZKANTAPI.postman_collection.json)**
+📄 **[`postman.json`](./postman.json)** *(également disponible sous le nom [`ZKANTAPI.postman_collection.json`](./ZKANTAPI.postman_collection.json))*
 
 ### Comment l'utiliser dans Postman :
-1. Ouvrez Postman et cliquez sur **Import** (en haut à gauche).
-2. Sélectionnez le fichier `ZKANTAPI.postman_collection.json`.
-3. La collection contient tous les cas de tests organisés par niveau (cas passants et cas d'erreur `400`, `404`, `409`).
+1. Ouvrez Postman et cliquez sur le bouton **Import** (en haut à gauche).
+2. Sélectionnez le fichier **`postman.json`** (ou `ZKANTAPI.postman_collection.json`).
+3. La collection contient tous les cas de tests organisés par niveau de **F1 à F19** (cas passants et cas d'erreur `400`, `404`, `409`).
 4. **Bascule facile entre Local et Cloud :** modifiez simplement la variable de collection `baseUrl` :
-   - Pour tester en ligne : `https://gestionlocative-2kok.onrender.com`
+   - Pour tester en ligne sur Render : `https://gestionlocative-2kok.onrender.com`
    - Pour tester en local : `http://localhost:8080` *(ou `http://localhost:9090`)*
 
 ---
