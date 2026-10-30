@@ -1,0 +1,2171 @@
+{
+  "info": {
+    "_postman_id": "a7891234-b567-4c89-9012-3456789abcde",
+    "name": "ZKANTAPI — Gestion Locative (Niveaux 1 à 4)",
+    "description": "Collection Postman complète pour le Projet — Gestion Locative (F1 à F19) générée à partir des scripts de test test_n1.sh, test_n2.sh, test_n3.sh, test_f15.sh et test_n4.sh.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9090",
+      "type": "string"
+    },
+    {
+      "key": "proprietaireId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "immeubleId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "appartementId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "locataireId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "bailId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "NIVEAU 1 — LE CRUD (test_n1.sh : F1 à F5)",
+      "item": [
+        {
+          "name": "F1. Gérer les propriétaires",
+          "item": [
+            {
+              "name": "F1 - Créer un propriétaire valide",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires"
+                  ]
+                },
+                "description": "Création d'un propriétaire valide",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Diallo\",\n  \"prenom\": \"Amadou\",\n  \"numero\": \"+224621000001\",\n  \"email\": \"diallo@test.ci\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F1 - Créer un propriétaire — Email en double (409)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires"
+                  ]
+                },
+                "description": "Email en double -> 409",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Sow\",\n  \"prenom\": \"Fatou\",\n  \"numero\": \"+224621000002\",\n  \"email\": \"diallo@test.ci\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F1 - Créer un propriétaire — Nom manquant (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires"
+                  ]
+                },
+                "description": "Nom obligatoire manquant -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"prenom\": \"Test\",\n  \"numero\": \"+224600000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F1 - Lister les propriétaires (paginés et triés par nom)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires?page=0&size=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Liste paginée et triée par nom"
+              },
+              "response": []
+            },
+            {
+              "name": "F1 - Consulter un propriétaire par ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires/{{proprietaireId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires",
+                    "{{proprietaireId}}"
+                  ]
+                },
+                "description": "Détails d'un propriétaire"
+              },
+              "response": []
+            },
+            {
+              "name": "F1 - Consulter un propriétaire inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires/99999",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires",
+                    "99999"
+                  ]
+                },
+                "description": "ID inconnu -> 404"
+              },
+              "response": []
+            },
+            {
+              "name": "F1 - Modifier un propriétaire",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires/{{proprietaireId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires",
+                    "{{proprietaireId}}"
+                  ]
+                },
+                "description": "Modification d'un propriétaire",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Diallo Modifié\",\n  \"prenom\": \"Amadou\",\n  \"numero\": \"+224621000001\",\n  \"email\": \"diallo@test.ci\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F1 - Supprimer un propriétaire",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires/{{proprietaireId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires",
+                    "{{proprietaireId}}"
+                  ]
+                },
+                "description": "Suppression d'un propriétaire (refusée s'il possède des immeubles)"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F2. Gérer les immeubles",
+          "item": [
+            {
+              "name": "F2 - Créer un immeuble valide",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles"
+                  ]
+                },
+                "description": "Création d'un immeuble valide",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Résidence Kante\",\n  \"adresse\": \"Kaloum\",\n  \"nbEtages\": 5,\n  \"proprietaireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F2 - Créer un immeuble — nbEtages=0 (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles"
+                  ]
+                },
+                "description": "nbEtages <= 0 -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Test\",\n  \"adresse\": \"Test\",\n  \"nbEtages\": 0,\n  \"proprietaireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F2 - Consulter un immeuble par ID (avec nbAppartements)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/{{immeubleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "{{immeubleId}}"
+                  ]
+                },
+                "description": "Détail de l'immeuble avec nbAppartements"
+              },
+              "response": []
+            },
+            {
+              "name": "F2 - Lister les immeubles (triés par adresse)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles?page=0&size=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Liste paginée triée par adresse"
+              },
+              "response": []
+            },
+            {
+              "name": "F2 - Consulter un immeuble inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/99999",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "99999"
+                  ]
+                },
+                "description": "ID inconnu -> 404"
+              },
+              "response": []
+            },
+            {
+              "name": "F2 - Modifier un immeuble",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/{{immeubleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "{{immeubleId}}"
+                  ]
+                },
+                "description": "Modification d'un immeuble",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Résidence Kante Modifiée\",\n  \"adresse\": \"Kaloum Centre\",\n  \"nbEtages\": 6,\n  \"proprietaireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F2 - Supprimer un immeuble",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/{{immeubleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "{{immeubleId}}"
+                  ]
+                },
+                "description": "Suppression d'un immeuble (refusée s'il contient des appartements)"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F3. Gérer les appartements",
+          "item": [
+            {
+              "name": "F3 - Créer un appartement valide",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ]
+                },
+                "description": "Création d'un appartement valide",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"App 101\",\n  \"surface\": 85.5,\n  \"nbPieces\": 3,\n  \"etage\": 2,\n  \"proprietaireId\": 1,\n  \"immeubleId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F3 - Créer un appartement — Surface négative (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ]
+                },
+                "description": "Surface négative -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Bad\",\n  \"surface\": -10,\n  \"nbPieces\": 2,\n  \"etage\": 1,\n  \"proprietaireId\": 1,\n  \"immeubleId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F3 - Créer un appartement — Étage > nbEtages (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ]
+                },
+                "description": "Étage supérieur au nombre d'étages de l'immeuble -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Bad\",\n  \"surface\": 50,\n  \"nbPieces\": 2,\n  \"etage\": 10,\n  \"proprietaireId\": 1,\n  \"immeubleId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F3 - Lister les appartements (paginés)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements?page=0&size=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Liste paginée des appartements"
+              },
+              "response": []
+            },
+            {
+              "name": "F3 - Consulter un appartement par ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/{{appartementId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "{{appartementId}}"
+                  ]
+                },
+                "description": "Détail de l'appartement"
+              },
+              "response": []
+            },
+            {
+              "name": "F3 - Consulter un appartement inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/99999",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "99999"
+                  ]
+                },
+                "description": "ID inconnu -> 404"
+              },
+              "response": []
+            },
+            {
+              "name": "F3 - Modifier un appartement",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/{{appartementId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "{{appartementId}}"
+                  ]
+                },
+                "description": "Modification d'un appartement",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"App 101 Rénové\",\n  \"surface\": 90.0,\n  \"nbPieces\": 4,\n  \"etage\": 2,\n  \"proprietaireId\": 1,\n  \"immeubleId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F3 - Supprimer un appartement",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/{{appartementId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "{{appartementId}}"
+                  ]
+                },
+                "description": "Suppression d'un appartement"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F4. Gérer les locataires",
+          "item": [
+            {
+              "name": "F4 - Créer un locataire valide",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires"
+                  ]
+                },
+                "description": "Création d'un locataire valide",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Camara\",\n  \"prenom\": \"Mariam\",\n  \"numero\": \"+224621000010\",\n  \"email\": \"camara@test.ci\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F4 - Créer un locataire — Email en double (409)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires"
+                  ]
+                },
+                "description": "Email en double -> 409",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Fofana\",\n  \"prenom\": \"Souleymane\",\n  \"numero\": \"+224621000011\",\n  \"email\": \"camara@test.ci\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F4 - Créer un locataire — Email manquant (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires"
+                  ]
+                },
+                "description": "Email obligatoire manquant -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Test\",\n  \"prenom\": \"Test\",\n  \"numero\": \"+224600000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F4 - Lister les locataires",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires?page=0&size=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Liste paginée des locataires"
+              },
+              "response": []
+            },
+            {
+              "name": "F4 - Consulter un locataire par ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires/{{locataireId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires",
+                    "{{locataireId}}"
+                  ]
+                },
+                "description": "Détails du locataire"
+              },
+              "response": []
+            },
+            {
+              "name": "F4 - Consulter un locataire inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires/99999",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires",
+                    "99999"
+                  ]
+                },
+                "description": "ID inconnu -> 404"
+              },
+              "response": []
+            },
+            {
+              "name": "F4 - Modifier un locataire",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires/{{locataireId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires",
+                    "{{locataireId}}"
+                  ]
+                },
+                "description": "Modification d'un locataire",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nom\": \"Camara\",\n  \"prenom\": \"Mariam\",\n  \"numero\": \"+224621999999\",\n  \"email\": \"camara@test.ci\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F4 - Supprimer un locataire",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/locataires/{{locataireId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "locataires",
+                    "{{locataireId}}"
+                  ]
+                },
+                "description": "Suppression d'un locataire"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F5. Gérer les baux",
+          "item": [
+            {
+              "name": "F5 - Créer un bail valide",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "Création d'un bail valide",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2026-12-01T00:00:00.000Z\",\n  \"dateFin\": \"2027-11-30T00:00:00.000Z\",\n  \"montantLoyer\": 500000,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F5 - Créer un bail — DateFin < DateDebut (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "DateFin antérieure à DateDebut -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2026-12-01T00:00:00.000Z\",\n  \"dateFin\": \"2026-11-30T00:00:00.000Z\",\n  \"montantLoyer\": 500000,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F5 - Créer un bail — Loyer négatif (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "Loyer négatif -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2026-12-01T00:00:00.000Z\",\n  \"dateFin\": \"2027-11-30T00:00:00.000Z\",\n  \"montantLoyer\": -500,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F5 - Consulter un bail par ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}"
+                  ]
+                },
+                "description": "Détails d'un bail"
+              },
+              "response": []
+            },
+            {
+              "name": "F5 - Consulter un bail inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/99999",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "99999"
+                  ]
+                },
+                "description": "ID inconnu -> 404"
+              },
+              "response": []
+            },
+            {
+              "name": "F5 - Lister les baux (triés par dateDebut DESC)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/baux?page=0&size=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Liste paginée triée par dateDebut décroissante"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NIVEAU 2 — CONSULTATION ET RECHERCHE (test_n2.sh : F6 à F10)",
+      "item": [
+        {
+          "name": "F6. Appartements d'un immeuble",
+          "item": [
+            {
+              "name": "F6 - Lister les appartements d'un immeuble",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/{{immeubleId}}/appartements",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "{{immeubleId}}",
+                    "appartements"
+                  ]
+                },
+                "description": "Appartements triés par étage puis nom avec statut occupé"
+              },
+              "response": []
+            },
+            {
+              "name": "F6 - Immeuble inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/99999/appartements",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "99999",
+                    "appartements"
+                  ]
+                },
+                "description": "Identifiant d'immeuble inconnu -> 404"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F7. Immeubles d'un propriétaire",
+          "item": [
+            {
+              "name": "F7 - Lister les immeubles d'un propriétaire",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires/{{proprietaireId}}/immeubles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires",
+                    "{{proprietaireId}}",
+                    "immeubles"
+                  ]
+                },
+                "description": "Immeubles du propriétaire avec nbAppartements et nbBauxEnCours"
+              },
+              "response": []
+            },
+            {
+              "name": "F7 - Propriétaire inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/proprietaires/99999/immeubles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "proprietaires",
+                    "99999",
+                    "immeubles"
+                  ]
+                },
+                "description": "Identifiant propriétaire inconnu -> 404"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F8. Baux d'un appartement",
+          "item": [
+            {
+              "name": "F8 - Lister les baux d'un appartement",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/{{appartementId}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "{{appartementId}}",
+                    "baux"
+                  ]
+                },
+                "description": "Historique des baux de l'appartement avec indicateur enCours"
+              },
+              "response": []
+            },
+            {
+              "name": "F8 - Appartement inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/99999/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "99999",
+                    "baux"
+                  ]
+                },
+                "description": "Identifiant appartement inconnu -> 404"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F9. Recherche d'appartements par critères",
+          "item": [
+            {
+              "name": "F9 - Rechercher par nombre de pièces (pieces=3)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements?pieces=3",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ],
+                  "query": [
+                    {
+                      "key": "pieces",
+                      "value": "3"
+                    }
+                  ]
+                },
+                "description": "Filtre les appartements ayant exactement 3 pièces"
+              },
+              "response": []
+            },
+            {
+              "name": "F9 - Rechercher par surface minimale (surfaceMin=50)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements?surfaceMin=50",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ],
+                  "query": [
+                    {
+                      "key": "surfaceMin",
+                      "value": "50"
+                    }
+                  ]
+                },
+                "description": "Filtre les appartements de surface >= 50 m²"
+              },
+              "response": []
+            },
+            {
+              "name": "F9 - Rechercher par intervalle de surface (surfaceMin & surfaceMax)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements?surfaceMin=40&surfaceMax=100",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ],
+                  "query": [
+                    {
+                      "key": "surfaceMin",
+                      "value": "40"
+                    },
+                    {
+                      "key": "surfaceMax",
+                      "value": "100"
+                    }
+                  ]
+                },
+                "description": "Filtre les appartements entre 40 m² et 100 m²"
+              },
+              "response": []
+            },
+            {
+              "name": "F9 - Incohérence surfaceMin > surfaceMax (400)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements?surfaceMin=100&surfaceMax=50",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements"
+                  ],
+                  "query": [
+                    {
+                      "key": "surfaceMin",
+                      "value": "100"
+                    },
+                    {
+                      "key": "surfaceMax",
+                      "value": "50"
+                    }
+                  ]
+                },
+                "description": "surfaceMin > surfaceMax -> 400"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F10. Pagination et tri des baux",
+          "item": [
+            {
+              "name": "F10 - Paginer et trier les baux (dateDebut,desc)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/baux?page=0&size=20&sort=dateDebut,desc",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "dateDebut,desc"
+                    }
+                  ]
+                },
+                "description": "Pagination avec nombreTotalElements et totalPages"
+              },
+              "response": []
+            },
+            {
+              "name": "F10 - Trier les baux par montantLoyer décroissant",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/baux?page=0&size=20&sort=montantLoyer,desc",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "montantLoyer,desc"
+                    }
+                  ]
+                },
+                "description": "Tri par loyer décroissant"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NIVEAU 3 — LES RÈGLES MÉTIER (test_n3.sh & test_f15.sh : F11 à F16)",
+      "item": [
+        {
+          "name": "F11. Non-chevauchement des baux (409)",
+          "item": [
+            {
+              "name": "F11 - Créer un bail qui chevauche un bail existant (409)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "Période incluse dans un bail existant -> 409 citant le bail en conflit",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2027-03-01T00:00:00.000Z\",\n  \"dateFin\": \"2027-06-30T00:00:00.000Z\",\n  \"montantLoyer\": 300000,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F11 - Créer un bail sans date de fin qui recouvre (409)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "Bail sans fin qui recouvre un bail existant -> 409",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2027-02-01T00:00:00.000Z\",\n  \"montantLoyer\": 300000,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F11 - Créer un bail après la fin du précédent (200)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "Bail postérieur à la fin du précédent -> 200",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2028-01-01T00:00:00.000Z\",\n  \"dateFin\": \"2028-12-31T00:00:00.000Z\",\n  \"montantLoyer\": 350000,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F12. Cohérence des dates et durée minimale d'un mois",
+          "item": [
+            {
+              "name": "F12 - Date de fin avant date de début (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "Date de fin antérieure à la date de début -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2027-05-10T00:00:00.000Z\",\n  \"dateFin\": \"2027-05-01T00:00:00.000Z\",\n  \"montantLoyer\": 300000,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F12 - Durée inférieure à 1 mois (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux"
+                  ]
+                },
+                "description": "Durée du bail < 1 mois -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateDebut\": \"2029-05-01T00:00:00.000Z\",\n  \"dateFin\": \"2029-05-15T00:00:00.000Z\",\n  \"montantLoyer\": 300000,\n  \"appartementId\": 1,\n  \"locataireId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F13. Résiliation d'un bail",
+          "item": [
+            {
+              "name": "F13 - Résilier un bail en cours (valide)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/resiliation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "resiliation"
+                  ]
+                },
+                "description": "Résilie le bail à la date d'effet indiquée (statut RESILIE)",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateEffet\": \"2027-06-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F13 - Résilier avec date antérieure à aujourd'hui (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/resiliation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "resiliation"
+                  ]
+                },
+                "description": "Date d'effet antérieure à aujourd'hui -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateEffet\": \"2020-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F13 - Résilier avec date hors période du bail (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/resiliation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "resiliation"
+                  ]
+                },
+                "description": "Date d'effet hors période du bail -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateEffet\": \"2099-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F13 - Résilier un bail déjà résilié (409)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/resiliation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "resiliation"
+                  ]
+                },
+                "description": "Bail déjà résilié -> 409",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateEffet\": \"2027-06-15\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F14. Renouvellement d'un bail",
+          "item": [
+            {
+              "name": "F14 - Renouveler un bail (nouvelleDateFin valide)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/renouvellement",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "renouvellement"
+                  ]
+                },
+                "description": "Prolonge le bail et historise l'ancienne et la nouvelle date de fin",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nouvelleDateFin\": \"2028-11-30\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F14 - Nouvelle date <= date de fin actuelle (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/renouvellement",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "renouvellement"
+                  ]
+                },
+                "description": "La nouvelle date de fin doit être postérieure à la date de fin actuelle -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nouvelleDateFin\": \"2027-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F15. Révision du loyer (test_f15.sh)",
+          "item": [
+            {
+              "name": "F15 - Réviser le loyer d'un bail (valide)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/revision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "revision"
+                  ]
+                },
+                "description": "Enregistre une révision de loyer à la date d'effet",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nouveauMontant\": 320000,\n  \"dateEffet\": \"2027-07-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F15 - Révision déjà existante à cette date (409)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/revision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "revision"
+                  ]
+                },
+                "description": "Une révision existe déjà à cette date -> 409",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nouveauMontant\": 330000,\n  \"dateEffet\": \"2027-07-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F15 - Montant non positif <= 0 (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/revision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "revision"
+                  ]
+                },
+                "description": "Nouveau montant <= 0 -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nouveauMontant\": 0,\n  \"dateEffet\": \"2027-08-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F15 - Date antérieure à la dernière révision (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/revision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "revision"
+                  ]
+                },
+                "description": "Date d'effet antérieure à la dernière révision -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nouveauMontant\": 340000,\n  \"dateEffet\": \"2027-02-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "F15 - Date hors période du bail (400)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/{{bailId}}/revision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "{{bailId}}",
+                    "revision"
+                  ]
+                },
+                "description": "Date d'effet hors période du bail -> 400",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nouveauMontant\": 400000,\n  \"dateEffet\": \"2099-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F16. Clôture des baux arrivés à terme",
+          "item": [
+            {
+              "name": "F16 - Déclencher la clôture des baux expirés",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/baux/cloture",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "baux",
+                    "cloture"
+                  ]
+                },
+                "description": "Passe les baux arrivés à terme au statut TERMINE (enCours=false) et retourne bauxClotures"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NIVEAU 4 — LA RESTITUTION (test_n4.sh : F17 à F19)",
+      "item": [
+        {
+          "name": "F17. Appartements libres à une date donnée",
+          "item": [
+            {
+              "name": "F17 - Lister les appartements libres aujourd'hui (sans paramètre)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/libres",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "libres"
+                  ]
+                },
+                "description": "Appartements libres à la date du jour, groupés par immeuble avec surface et dernierLoyer"
+              },
+              "response": []
+            },
+            {
+              "name": "F17 - Lister les appartements libres à une date précise",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/libres?date=2026-12-31",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "libres"
+                  ],
+                  "query": [
+                    {
+                      "key": "date",
+                      "value": "2026-12-31"
+                    }
+                  ]
+                },
+                "description": "Appartements libres au 2026-12-31, groupés par immeuble avec dernierLoyer"
+              },
+              "response": []
+            },
+            {
+              "name": "F17 - Format de date invalide (400)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/libres?date=pas-une-date",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "libres"
+                  ],
+                  "query": [
+                    {
+                      "key": "date",
+                      "value": "pas-une-date"
+                    }
+                  ]
+                },
+                "description": "Date invalide -> 400"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F18. Historique d'occupation d'un appartement",
+          "item": [
+            {
+              "name": "F18 - Consulter l'occupation d'un appartement",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/{{appartementId}}/occupation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "{{appartementId}}",
+                    "occupation"
+                  ]
+                },
+                "description": "Chronologie des périodes OCCUPE (avec locataire et loyer révisé) et VACANT"
+              },
+              "response": []
+            },
+            {
+              "name": "F18 - Appartement inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/appartements/999999/occupation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appartements",
+                    "999999",
+                    "occupation"
+                  ]
+                },
+                "description": "Appartement inconnu -> 404"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "F19. Revenu mensuel et taux d'occupation d'un immeuble",
+          "item": [
+            {
+              "name": "F19 - Calculer le revenu mensuel d'un immeuble (mois=2026-11)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/{{immeubleId}}/revenu?mois=2026-11",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "{{immeubleId}}",
+                    "revenu"
+                  ],
+                  "query": [
+                    {
+                      "key": "mois",
+                      "value": "2026-11"
+                    }
+                  ]
+                },
+                "description": "Revenu total au prorata des jours, tauxOccupation (%) et détail par appartement"
+              },
+              "response": []
+            },
+            {
+              "name": "F19 - Format de mois invalide (400)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/{{immeubleId}}/revenu?mois=novembre",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "{{immeubleId}}",
+                    "revenu"
+                  ],
+                  "query": [
+                    {
+                      "key": "mois",
+                      "value": "novembre"
+                    }
+                  ]
+                },
+                "description": "Format de mois invalide -> 400"
+              },
+              "response": []
+            },
+            {
+              "name": "F19 - Immeuble inconnu (404)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/immeubles/999999/revenu?mois=2026-11",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "immeubles",
+                    "999999",
+                    "revenu"
+                  ],
+                  "query": [
+                    {
+                      "key": "mois",
+                      "value": "2026-11"
+                    }
+                  ]
+                },
+                "description": "Immeuble inconnu -> 404"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
