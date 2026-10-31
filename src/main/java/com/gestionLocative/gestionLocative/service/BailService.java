@@ -285,6 +285,43 @@ public class BailService extends AbstractCrudService {
     }
 
     /**
+     * F10 - Pagination et tri paramétrable des baux.
+     */
+    public org.springframework.data.domain.Page<ResponseDto> getAll(int page, int taille, String sort) {
+        org.springframework.data.domain.Sort sorting;
+        if (sort != null && sort.contains(",")) {
+            String[] parts = sort.split(",");
+            String property = parts[0].trim();
+            org.springframework.data.domain.Sort.Direction direction = "desc".equalsIgnoreCase(parts[1].trim())
+                    ? org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC;
+            sorting = org.springframework.data.domain.Sort.by(direction, property);
+        } else if (sort != null && !sort.isBlank()) {
+            sorting = org.springframework.data.domain.Sort.by(sort.trim());
+        } else {
+            sorting = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Order.desc("dateDebut"));
+        }
+        return super.getAll(page, taille, sorting);
+    }
+
+    /**
+     * F15 - Révision du loyer depuis une Map de paramètres.
+     */
+    @Transactional
+    public ResponseDto revision(Long id, java.util.Map<String, Object> body) {
+        if (body == null || body.get("nouveauMontant") == null) {
+            throw new RequeteInvalideException("Le nouveau montant est obligatoire.");
+        }
+        BigDecimal nouveauMontant;
+        try {
+            nouveauMontant = new BigDecimal(String.valueOf(body.get("nouveauMontant")));
+        } catch (Exception e) {
+            throw new RequeteInvalideException("Le format du nouveau montant est invalide.");
+        }
+        String dateEffet = body.get("dateEffet") != null ? String.valueOf(body.get("dateEffet")) : null;
+        return revision(id, nouveauMontant, dateEffet);
+    }
+
+    /**
      * Loyer applicable à une date donnée (utilisé pour figer le loyer d'une quittance).
      */
     public BigDecimal loyerAu(Long bailId, Date date) {

@@ -113,6 +113,9 @@ public class AppartementService extends AbstractCrudService {
     }
 
     public Page<ResponseDto> findBySearchCriteria(int page, int taille, Double surfaceMin, Double surfaceMax, Integer pieces) {
+        if (surfaceMin != null && surfaceMax != null && surfaceMin > surfaceMax) {
+            throw new IllegalArgumentException("La surface minimale ne peut pas être supérieure à la surface maximale.");
+        }
         Pageable pageable = PageRequest.of(pageAutorisee(page), tailleAutorisee(taille), Sort.by("etage", "surface"));
         return appartementRepository.rechercher(
                 surfaceMin == null ? null : BigDecimal.valueOf(surfaceMin),
